@@ -5,7 +5,7 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "users")
-class Image (
+class Image(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,

@@ -72,9 +72,11 @@ class UserController @Autowired constructor(
             )
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class)),
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class)),
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createUser(@RequestBody createUserRequest: UserService.CreateUserRequest): ResponseEntity<*> {
@@ -91,9 +93,11 @@ class UserController @Autowired constructor(
     @PatchMapping("/{id}")
     @Operation(summary = "Update user info")
     @ApiResponse(responseCode = "200", description = "Success - updated user", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class)),
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class)),
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUser(
@@ -114,9 +118,11 @@ class UserController @Autowired constructor(
     @Operation(summary = "Delete user")
     @ApiResponse(responseCode = "200", description = "Success - deleted user")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class)),
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class)),
+        ]
+    )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteUser(@PathVariable id: Long): ResponseEntity<*> {
         return try {

@@ -17,7 +17,7 @@ class AdRequestService @Autowired constructor(
     private val userRepo: UserRepo
 ) {
     @Throws(EntityNotFoundException::class)
-    fun createAdRequest(createAdRequest: CreateAdRequest) : Long {
+    fun createAdRequest(createAdRequest: CreateAdRequest): Long {
         val owner = userRepo.findById(createAdRequest.ownerId).getOrElse {
             throw EntityNotFoundException()
         }
@@ -55,7 +55,7 @@ class AdRequestService @Autowired constructor(
     private fun updateAdRequestFields(adRequest: AdRequest, updateAdRequest: UpdateAdRequest) {
         updateAdRequest.requestText?.let { adRequest.requestText = it }
         updateAdRequest.ageSegments?.let { adRequest.auditory.ageSegments = it }
-        updateAdRequest.incomeSegments?.let { adRequest.auditory.incomeSegments = it}
+        updateAdRequest.incomeSegments?.let { adRequest.auditory.incomeSegments = it }
         updateAdRequest.locations?.let { adRequest.auditory.locations = it }
         updateAdRequest.interests?.let { adRequest.auditory.interests = it }
         updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = it }
@@ -76,18 +76,23 @@ class AdRequestService @Autowired constructor(
             AdRequestStatus.READY_TO_CHECK ->
                 if (adRequest.status != AdRequestStatus.NEEDS_CLARIFICATION)
                     throw UnsupportedOperationException()
+
             AdRequestStatus.NEEDS_CLARIFICATION ->
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
                     throw UnsupportedOperationException()
+
             AdRequestStatus.MODERATION ->
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
                     throw UnsupportedOperationException()
+
             AdRequestStatus.READY_TO_PUBLISH ->
                 if (adRequest.status != AdRequestStatus.MODERATION)
                     throw UnsupportedOperationException()
+
             AdRequestStatus.PUBLISHED ->
                 if (adRequest.status != AdRequestStatus.READY_TO_PUBLISH)
                     throw UnsupportedOperationException()
+
             AdRequestStatus.CANCELED ->
                 if (adRequest.status == AdRequestStatus.PUBLISHED)
                     throw UnsupportedOperationException()
@@ -117,7 +122,7 @@ class AdRequestService @Autowired constructor(
         return adRequestRepo.findAll()
     }
 
-    data class CreateAdRequest (
+    data class CreateAdRequest(
         val ownerId: Long,
         var requestText: String,
         val ageSegments: String?,
@@ -128,7 +133,7 @@ class AdRequestService @Autowired constructor(
         var lifeHours: Int?,
     )
 
-    data class UpdateAdRequest (
+    data class UpdateAdRequest(
         val requestText: String?,
         val ageSegments: String?,
         val incomeSegments: String?,
@@ -139,7 +144,7 @@ class AdRequestService @Autowired constructor(
         val clarificationText: String?
     )
 
-    data class UpdateAdRequestStatus (
+    data class UpdateAdRequestStatus(
         val status: String
     )
 }

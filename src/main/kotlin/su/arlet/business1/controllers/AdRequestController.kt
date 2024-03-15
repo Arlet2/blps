@@ -28,9 +28,11 @@ class AdRequestController @Autowired constructor(
             Content(array = ArraySchema(items = Schema(implementation = AdRequest::class)))
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad request body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad request body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getAdRequests(): ResponseEntity<*> {
         return try {
@@ -48,9 +50,11 @@ class AdRequestController @Autowired constructor(
             Content(schema = Schema(implementation = AdRequest::class))
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - ad request not found", content = [])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getAdRequestById(@PathVariable id: Long): ResponseEntity<*> {
@@ -74,9 +78,11 @@ class AdRequestController @Autowired constructor(
             )
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createAdRequest(@RequestBody createAdRequest: AdRequestService.CreateAdRequest): ResponseEntity<*> {
@@ -93,9 +99,11 @@ class AdRequestController @Autowired constructor(
     @PatchMapping("/{id}")
     @Operation(summary = "Update ad request info")
     @ApiResponse(responseCode = "200", description = "Success - updated ad request", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - ad request not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateAdRequest(
@@ -115,9 +123,11 @@ class AdRequestController @Autowired constructor(
     @PostMapping("/{id}/status")
     @Operation(summary = "Update ad request status")
     @ApiResponse(responseCode = "200", description = "Updated", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "409", description = "Invalid status change", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
@@ -141,9 +151,11 @@ class AdRequestController @Autowired constructor(
     @Operation(summary = "Delete ad request")
     @ApiResponse(responseCode = "200", description = "Success - deleted ad request")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad body", content = [
-        Content(schema = Schema(implementation = String::class))
-    ])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class))
+        ]
+    )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteAdRequest(@PathVariable id: Long): ResponseEntity<*> {
         return try {
