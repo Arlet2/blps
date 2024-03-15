@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.Article
 import su.arlet.business1.repos.ArticleRepo
+import java.time.LocalDate
 
 @Service
 class ArticleService @Autowired constructor(
@@ -21,11 +22,22 @@ class ArticleService @Autowired constructor(
 
     }
 
-    fun getArticle(): Article {
-
+    fun getArticle(): Article? {
+        return null
     }
 
     fun getArticles(): List<Article> {
-
+        return listOf()
     }
+
+    data class CreateArticleRequest (
+        val ownerId: Long,
+        val title: String,
+        val text: String,
+    )
+
+    data class UpdateArticleRequest (
+        val title: String?,
+        val text: String?,
+    )
 }
