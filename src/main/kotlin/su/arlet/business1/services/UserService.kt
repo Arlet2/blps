@@ -11,16 +11,15 @@ import kotlin.jvm.optionals.getOrElse
 @Service
 class UserService @Autowired constructor(
     private val userRepo: UserRepo,
-    private val authService: AuthService
 ) {
     @Throws(EntityNotFoundException::class)
-    fun createUser(createUserRequest: CreateUserRequest) : Long {
+    fun createUser(createUserRequest: CreateUserRequest): Long {
         // TODO check login unique
 
         val user = User(
             name = createUserRequest.name,
             login = createUserRequest.login,
-            passwordHash = authService.getPasswordHash(createUserRequest.password),
+            passwordHash = hashPassword(createUserRequest.password),
             role = UserRole.DEFAULT
         )
 
@@ -42,7 +41,7 @@ class UserService @Autowired constructor(
 
     private fun updateUserFields(user: User, updateUserRequest: UpdateUserRequest) {
         updateUserRequest.name?.let { user.name = it }
-        updateUserRequest.password?.let { user.passwordHash = authService.getPasswordHash(it) }
+        updateUserRequest.password?.let { user.passwordHash = hashPassword(it) }
     }
 
     @Throws(EntityNotFoundException::class)
@@ -64,13 +63,17 @@ class UserService @Autowired constructor(
         return userRepo.findAll()
     }
 
-    data class CreateUserRequest (
+    fun hashPassword(password: String): String {
+        return password.reversed()
+    }
+
+    data class CreateUserRequest(
         val name: String?,
         val login: String,
         var password: String
     )
 
-    data class UpdateUserRequest (
+    data class UpdateUserRequest(
         val name: String?,
         var password: String?
     )
