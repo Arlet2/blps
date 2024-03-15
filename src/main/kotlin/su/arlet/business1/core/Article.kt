@@ -10,5 +10,4 @@ class Article(
     val id: Long,
     val title: String,
     val text: String,
-    val images: Map<String, String> // todo: ?
 )

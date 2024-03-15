@@ -1,4 +1,4 @@
-package su.arlet.business1.controllers.filters
+package su.arlet.business1.controllers
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -55,7 +55,7 @@ class ArticleController @Autowired constructor(
     )
     @ApiResponse(responseCode = "404", description = "Not found - article not found", content = [Content()])
     fun getArticleById(@PathVariable id: Long): ResponseEntity<*> {
-
+        return ResponseEntity.ok(null)
     }
 
     @PostMapping("/")
@@ -69,10 +69,10 @@ class ArticleController @Autowired constructor(
         ]
     )
     fun createArticle(
-        @RequestBody petRequest: CreatePetRequest,
+        @RequestBody petRequest: ArticleService.CreateArticleRequest,
         request: HttpServletRequest
     ): ResponseEntity<*> {
-
+        return ResponseEntity.ok(null)
     }
 
     @PatchMapping("/{id}")
@@ -81,9 +81,9 @@ class ArticleController @Autowired constructor(
     @ApiResponse(responseCode = "404", description = "Not found - article not found", content = [Content()])
     fun updateArticle(
         @PathVariable id: Long,
-        @RequestBody updatedPet: UpdatePetRequest,
+        @RequestBody updatedPet: ArticleService.UpdateArticleRequest,
     ): ResponseEntity<*> {
-
+        return ResponseEntity.ok(null)
     }
 
     @DeleteMapping("/{id}")
@@ -91,38 +91,6 @@ class ArticleController @Autowired constructor(
     @ApiResponse(responseCode = "200", description = "Success - deleted article")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     fun deleteArticle(@PathVariable id: Long): ResponseEntity<*> {
-
+        return ResponseEntity.ok(null)
     }
-
-    private fun updatePetFields(pet: Pet, updatedPet: UpdatePetRequest) {
-        updatedPet.petTypeId?.let {
-            pet.petType = petTypeRepo.findById(it).orElseThrow { throw EntityNotFoundException("petType") }
-        }
-        updatedPet.bloodTypeId?.let {
-            pet.bloodType = bloodTypeRepo.findById(it).orElseThrow { throw EntityNotFoundException("bloodType") }
-        }
-        updatedPet.name?.let { pet.name = it }
-        updatedPet.description?.let { pet.description = it }
-        updatedPet.birthday?.let { pet.birthday = it }
-        updatedPet.weight?.let { pet.weight = it }
-    }
-
-    data class CreatePetRequest(
-        var petTypeId: Long,
-        var bloodTypeId: Long,
-        var name: String,
-        var description: String?,
-        var birthday: LocalDate?,
-        var weight: Double?
-    )
-
-    data class UpdatePetRequest(
-        val petTypeId: Long? = null,
-        val bloodTypeId: Long? = null,
-        val name: String? = null,
-        val description: String? = null,
-        val birthday: LocalDate? = null,
-        val weight: Double? = null
-    )
-
 }
