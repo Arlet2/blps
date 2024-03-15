@@ -10,7 +10,8 @@ import kotlin.jvm.optionals.getOrElse
 
 @Service
 class UserService @Autowired constructor(
-    private val userRepo: UserRepo
+    private val userRepo: UserRepo,
+    private val authService: AuthService
 ) {
     @Throws(NotFoundException::class)
     fun createUser(createUserRequest: CreateUserRequest) : Long {
@@ -19,7 +20,7 @@ class UserService @Autowired constructor(
         val user = User(
             name = createUserRequest.name,
             login = createUserRequest.login,
-            passwordHash = createUserRequest.password,
+            passwordHash = authService.getPasswordHash(createUserRequest.password),
             role = UserRole.DEFAULT
         )
 
@@ -41,7 +42,7 @@ class UserService @Autowired constructor(
 
     private fun updateUserFields(user: User, updateUserRequest: UpdateUserRequest) {
         updateUserRequest.name?.let { user.name = it }
-        updateUserRequest.password?.let { user.passwordHash = it }
+        updateUserRequest.password?.let { user.passwordHash = authService.getPasswordHash(it) }
     }
 
     @Throws(NotFoundException::class)

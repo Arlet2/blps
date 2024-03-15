@@ -27,17 +27,17 @@ class UserController @Autowired constructor(
             Content(schema = Schema(implementation = User::class))
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad request", content = [Content()])
+    @ApiResponse(responseCode = "400", description = "Bad body", content = [Content()])
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun getAdRequestById(@PathVariable id: Long): ResponseEntity<*> {
+    fun getUserById(@PathVariable id: Long): ResponseEntity<*> {
         return try {
             val user = userService.getUser(userId = id)
             ResponseEntity(user, HttpStatus.OK)
         } catch (_: NotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (_: Exception) {
-            ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
+        } catch (e: Exception) {
+            ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         }
     }
 
@@ -51,27 +51,27 @@ class UserController @Autowired constructor(
             )
         ]
     )
-    @ApiResponse(responseCode = "400", description = "Bad request", content = [Content()])
+    @ApiResponse(responseCode = "400", description = "Bad body", content = [Content()])
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun createAdRequest(@RequestBody createUserRequest: UserService.CreateUserRequest): ResponseEntity<*> {
+    fun createUser(@RequestBody createUserRequest: UserService.CreateUserRequest): ResponseEntity<*> {
         return try {
             val adRequestId = userService.createUser(createUserRequest)
             ResponseEntity(adRequestId, HttpStatus.CREATED)
         } catch (_: NotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (_: Exception) {
-            ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
+        } catch (e: Exception) {
+            ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         }
     }
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update user info")
     @ApiResponse(responseCode = "200", description = "Success - updated user", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad request", content = [Content()])
+    @ApiResponse(responseCode = "400", description = "Bad body", content = [Content()])
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun updateAdRequest(
+    fun updateUser(
         @PathVariable id: Long,
         @RequestBody updateUserRequest: UserService.UpdateUserRequest
     ): ResponseEntity<*> {
@@ -80,8 +80,8 @@ class UserController @Autowired constructor(
             ResponseEntity.ok(null)
         } catch (_: NotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (_: Exception) {
-            ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
+        } catch (e: Exception) {
+            ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         }
     }
 
@@ -89,16 +89,16 @@ class UserController @Autowired constructor(
     @Operation(summary = "Delete user")
     @ApiResponse(responseCode = "200", description = "Success - deleted user")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
-    @ApiResponse(responseCode = "400", description = "Bad request", content = [Content()])
+    @ApiResponse(responseCode = "400", description = "Bad body", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun deleteAdRequest(@PathVariable id: Long): ResponseEntity<*> {
+    fun deleteUser(@PathVariable id: Long): ResponseEntity<*> {
         return try {
             userService.deleteUser(userId = id)
             ResponseEntity.ok(null)
         } catch (_: NotFoundException) {
             ResponseEntity("User not found", HttpStatus.NO_CONTENT)
-        } catch (_: Exception) {
-            ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
+        } catch (e: Exception) {
+            ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         }
     }
 }
