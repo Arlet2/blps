@@ -7,11 +7,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
+import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.services.UserService
 
 @RestController
@@ -34,7 +34,7 @@ class UserController @Autowired constructor(
         return try {
             val user = userService.getUser(userId = id)
             ResponseEntity(user, HttpStatus.OK)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -58,7 +58,7 @@ class UserController @Autowired constructor(
         return try {
             val adRequestId = userService.createUser(createUserRequest)
             ResponseEntity(adRequestId, HttpStatus.CREATED)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -78,7 +78,7 @@ class UserController @Autowired constructor(
         return try {
             userService.updateUser(userId = id, updateUserRequest = updateUserRequest)
             ResponseEntity.ok(null)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -95,7 +95,7 @@ class UserController @Autowired constructor(
         return try {
             userService.deleteUser(userId = id)
             ResponseEntity.ok(null)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("User not found", HttpStatus.NO_CONTENT)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)

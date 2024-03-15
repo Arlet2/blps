@@ -1,10 +1,10 @@
 package su.arlet.business1.services
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
+import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.repos.UserRepo
 import kotlin.jvm.optionals.getOrElse
 
@@ -13,7 +13,7 @@ class UserService @Autowired constructor(
     private val userRepo: UserRepo,
     private val authService: AuthService
 ) {
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun createUser(createUserRequest: CreateUserRequest) : Long {
         // TODO check login unique
 
@@ -29,10 +29,10 @@ class UserService @Autowired constructor(
         return userId
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun updateUser(userId: Long, updateUserRequest: UpdateUserRequest) {
         val user = userRepo.findById(userId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
 
         updateUserFields(user, updateUserRequest)
@@ -45,18 +45,18 @@ class UserService @Autowired constructor(
         updateUserRequest.password?.let { user.passwordHash = authService.getPasswordHash(it) }
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun deleteUser(userId: Long) {
         if (userRepo.findById(userId).isPresent)
             userRepo.deleteById(userId)
         else
-            throw NotFoundException()
+            throw EntityNotFoundException()
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun getUser(userId: Long): User {
         return userRepo.findById(userId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
     }
 

@@ -8,11 +8,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdRequest
+import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.services.AdRequestService
 
 @RestController
@@ -53,7 +53,7 @@ class AdRequestController @Autowired constructor(
         return try {
             val adRequest = adRequestService.getAdRequest(adRequestId = id)
             ResponseEntity(adRequest, HttpStatus.OK)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -77,7 +77,7 @@ class AdRequestController @Autowired constructor(
         return try {
             val adRequestId = adRequestService.createAdRequest(createAdRequest)
             ResponseEntity(adRequestId, HttpStatus.CREATED)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -97,7 +97,7 @@ class AdRequestController @Autowired constructor(
         return try {
             adRequestService.updateAdRequest(adRequestId = id, updateAdRequest = updateAdRequest)
             ResponseEntity.ok(null)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
@@ -118,7 +118,7 @@ class AdRequestController @Autowired constructor(
         return try {
             adRequestService.updateAdRequestStatus(adRequestId = id, updateStatus = newStatus)
             ResponseEntity(null, HttpStatus.OK)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
         } catch (_: UnsupportedOperationException) {
             ResponseEntity("Unsupported status change", HttpStatus.CONFLICT)
@@ -137,7 +137,7 @@ class AdRequestController @Autowired constructor(
         return try {
             adRequestService.deleteAdRequest(adRequestId = id)
             ResponseEntity.ok(null)
-        } catch (_: NotFoundException) {
+        } catch (_: EntityNotFoundException) {
             ResponseEntity("Ad request not found", HttpStatus.NO_CONTENT)
         } catch (e: Exception) {
             ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)

@@ -1,13 +1,11 @@
 package su.arlet.business1.services
 
-import jakarta.servlet.UnavailableException
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException.Conflict
 import su.arlet.business1.core.AdRequest
 import su.arlet.business1.core.Auditory
 import su.arlet.business1.core.enums.AdRequestStatus
+import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import java.time.LocalDate
@@ -18,10 +16,10 @@ class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val userRepo: UserRepo
 ) {
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest) : Long {
         val owner = userRepo.findById(createAdRequest.ownerId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
 
         val adRequest = AdRequest(
@@ -43,10 +41,10 @@ class AdRequestService @Autowired constructor(
         return adRequestId
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun updateAdRequest(adRequestId: Long, updateAdRequest: UpdateAdRequest) {
         val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
 
         updateAdRequestFields(adRequest, updateAdRequest)
@@ -65,10 +63,10 @@ class AdRequestService @Autowired constructor(
         updateAdRequest.clarificationText?.let { adRequest.clarificationText = it }
     }
 
-    @Throws(NotFoundException::class, IllegalArgumentException::class, UnsupportedOperationException::class)
+    @Throws(EntityNotFoundException::class, IllegalArgumentException::class, UnsupportedOperationException::class)
     fun updateAdRequestStatus(adRequestId: Long, updateStatus: UpdateAdRequestStatus) {
         val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
         val newStatus = AdRequestStatus.valueOf(updateStatus.status)
 
@@ -100,18 +98,18 @@ class AdRequestService @Autowired constructor(
         adRequestRepo.save(adRequest)
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun deleteAdRequest(adRequestId: Long) {
         if (adRequestRepo.findById(adRequestId).isPresent)
             adRequestRepo.deleteById(adRequestId)
         else
-            throw NotFoundException()
+            throw EntityNotFoundException()
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(EntityNotFoundException::class)
     fun getAdRequest(adRequestId: Long): AdRequest {
         return adRequestRepo.findById(adRequestId).getOrElse {
-            throw NotFoundException()
+            throw EntityNotFoundException()
         }
     }
 
