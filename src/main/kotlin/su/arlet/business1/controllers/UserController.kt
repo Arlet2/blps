@@ -60,10 +60,9 @@ class UserController @Autowired constructor(
             ResponseEntity(adRequestId, HttpStatus.CREATED)
         } catch (_: NotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
+        } catch (_: Exception) {
+            ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
         }
-        // catch (_: Exception) {
-        //    ResponseEntity("Bad body", HttpStatus.BAD_REQUEST)
-        //}
     }
 
     @PatchMapping("/{id}")
