@@ -10,6 +10,7 @@ import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
@@ -217,11 +218,14 @@ class AdRequestService @Autowired constructor(
             }
 
             if (publishDeadline != null) {
-                try {
+                val date = try {
                     LocalDate.parse(publishDeadline)
                 } catch (e: DateTimeParseException) {
                     throw ValidationException("bad date: ${e.message}")
                 }
+
+                if (date.isBefore(LocalDate.now()))
+                    throw ValidationException("publish dead line must be today or later")
             }
         }
     }
