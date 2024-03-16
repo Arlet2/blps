@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.Image
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.ImageRepo
 import kotlin.jvm.optionals.getOrNull
 
@@ -14,8 +15,8 @@ class ImageService(
     fun addImage(createImageRequest: CreateImageRequest): Long {
         val imageId = imageRepo.save(
             Image(
-                alias = createImageRequest.alias,
-                link = createImageRequest.link,
+                alias = createImageRequest.alias ?: throw ValidationException("alias must be provided"),
+                link = createImageRequest.link ?: throw ValidationException("alias must be provided"),
             )
         ).id
 
@@ -54,14 +55,34 @@ class ImageService(
     }
 
     data class CreateImageRequest(
-        @NotEmpty val alias: String,
-        @NotEmpty val link: String,
-    )
+        val alias: String?,
+        val link: String?,
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (alias == null)
+                throw ValidationException("alias must be provided")
+            if (link == null)
+                throw ValidationException("link must be provided")
+            if (alias == "")
+                throw ValidationException("alias must be not empty")
+            if (link == "")
+                throw ValidationException("link must be not empty")
+        }
+    }
 
     data class UpdateImageRequest(
         @NotEmpty val alias: String?,
         @NotEmpty val link: String?,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (alias == "")
+                throw ValidationException("alias must be not empty")
+            if (link == "")
+                throw ValidationException("link must be not empty")
+        }
+    }
 
     private fun updateImageFields(image: Image, updateImageRequest: UpdateImageRequest) {
         updateImageRequest.link?.let { image.link = it }

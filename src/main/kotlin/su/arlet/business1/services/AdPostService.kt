@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.ImageRepo
@@ -33,9 +34,9 @@ class AdPostService @Autowired constructor(
         }
 
         val adPost = AdPost(
-            title = createAdPost.title,
-            body = createAdPost.body,
-            targetLink = createAdPost.targetLink,
+            title = createAdPost.title ?: throw ValidationException("title must be provided"),
+            body = createAdPost.body ?: throw ValidationException("body must be provided"),
+            targetLink = createAdPost.targetLink ?: throw ValidationException("target link must be provided"),
             salesEditor = salesEditor,
             image = image,
             adRequest = adRequest,
@@ -86,6 +87,7 @@ class AdPostService @Autowired constructor(
         when (newStatus) {
             AdPostStatus.SAVED ->
                 throw UnsupportedOperationException()
+
             AdPostStatus.READY_TO_PUBLISH ->
                 if (adPost.status != AdPostStatus.SAVED)
                     throw UnsupportedOperationException()
@@ -123,19 +125,36 @@ class AdPostService @Autowired constructor(
                 val adPostStatus = AdPostStatus.valueOf(status.uppercase(Locale.getDefault()))
 
                 return adPostRepo.findAllByStatus(adPostStatus)
-            } catch (_: IllegalArgumentException) {}
+            } catch (_: IllegalArgumentException) {
+            }
 
         return adPostRepo.findAll()
     }
 
     data class CreateAdPost(
-        @NotBlank var title: String,
-        @NotBlank var body: String,
-        @NotBlank var targetLink: String,
+        @NotBlank var title: String?,
+        @NotBlank var body: String?,
+        @NotBlank var targetLink: String?,
         var salesEditorId: Long?,
         var imageId: Long?,
         val adRequestId: Long,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (title == null)
+                throw ValidationException("title must be provided")
+            if (body == null)
+                throw ValidationException("body must be provided")
+            if (targetLink == null)
+                throw ValidationException("target link must be provided")
+            if (title == "")
+                throw ValidationException("title must be not empty")
+            if (body == "")
+                throw ValidationException("body must be not empty")
+            if (targetLink == "")
+                throw ValidationException("target link must be not empty")
+        }
+    }
 
     data class UpdateAdPost(
         var title: String?,
@@ -143,9 +162,25 @@ class AdPostService @Autowired constructor(
         var targetLink: String?,
         var salesEditorId: Long?,
         var imageId: Long?,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (title != null && title == "")
+                throw ValidationException("title must be not empty")
+            if (body != null && body == "")
+                throw ValidationException("body must be not empty")
+            if (targetLink != null && targetLink == "")
+                throw ValidationException("target link must be not empty")
+        }
+    }
 
     data class UpdateAdPostStatus(
-        @NotBlank val status: String,
-    )
+        val status: String,
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (status != "")
+                throw ValidationException("status must be not empty")
+        }
+    }
 }

@@ -6,13 +6,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Image
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.ImageService
 
 @RestController
@@ -77,15 +76,15 @@ class ImageController(
     )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createImage(
-        @RequestBody @Valid createImageRequest: ImageService.CreateImageRequest,
-        bindingResult: BindingResult,
+        @RequestBody createImageRequest: ImageService.CreateImageRequest,
     ): ResponseEntity<*> {
-        if (bindingResult.hasErrors())
-            return ResponseEntity("Bad body: ${bindingResult.allErrors}", HttpStatus.BAD_REQUEST)
 
         return try {
+            createImageRequest.validate()
             val imageId = imageService.addImage(createImageRequest)
             ResponseEntity(imageId, HttpStatus.CREATED)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in create image: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -104,13 +103,16 @@ class ImageController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateImage(
         @PathVariable id: Long,
-        @RequestBody @Valid updateImageRequest: ImageService.UpdateImageRequest,
+        @RequestBody updateImageRequest: ImageService.UpdateImageRequest,
     ): ResponseEntity<*> {
         return try {
+            updateImageRequest.validate()
             imageService.updateImage(id, updateImageRequest)
             ResponseEntity(null, HttpStatus.OK)
         } catch (e: EntityNotFoundException) {
             ResponseEntity(null, HttpStatus.NOT_FOUND)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in update image: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)

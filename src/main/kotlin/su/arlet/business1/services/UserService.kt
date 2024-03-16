@@ -91,5 +91,11 @@ class UserService @Autowired constructor(
     data class UpdateUserRequest(
         val name: String?,
         var password: String?,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (password != null && password == "")
+                throw ValidationException("password must be not empty")
+        }
+    }
 }

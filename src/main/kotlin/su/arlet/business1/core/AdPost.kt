@@ -1,7 +1,6 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotBlank
 import su.arlet.business1.core.enums.AdPostStatus
 
 @Entity
@@ -11,9 +10,9 @@ class AdPost(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @NotBlank var title: String,
-    @NotBlank var body: String,
-    @NotBlank var targetLink: String,
+    var title: String,
+    var body: String,
+    var targetLink: String,
 
     @ManyToOne
     var salesEditor: User?,

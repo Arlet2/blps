@@ -6,10 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
@@ -77,12 +75,11 @@ class UserController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createUser(
         @RequestBody createUserRequest: UserService.CreateUserRequest,
-        bindingResult: BindingResult,
     ): ResponseEntity<*> {
 
         try {
             createUserRequest.validate()
-        } catch (e : ValidationException) {
+        } catch (e: ValidationException) {
             return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         }
 
@@ -109,18 +106,17 @@ class UserController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUser(
         @PathVariable id: Long,
-        @RequestBody @Valid updateUserRequest: UserService.UpdateUserRequest,
-        bindingResult: BindingResult,
+        @RequestBody updateUserRequest: UserService.UpdateUserRequest,
     ): ResponseEntity<*> {
 
-        if (bindingResult.hasErrors())
-            return ResponseEntity("Bad body: ${bindingResult.allErrors}", HttpStatus.BAD_REQUEST)
-
         return try {
+            updateUserRequest.validate()
             userService.updateUser(userId = id, updateUserRequest = updateUserRequest)
             ResponseEntity.ok(null)
         } catch (_: EntityNotFoundException) {
             ResponseEntity("Not found", HttpStatus.NOT_FOUND)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in update user: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)

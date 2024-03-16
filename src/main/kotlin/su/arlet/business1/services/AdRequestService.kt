@@ -1,14 +1,12 @@
 package su.arlet.business1.services
 
-import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotEmpty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdRequest
 import su.arlet.business1.core.Auditory
 import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import java.time.LocalDate
@@ -22,9 +20,12 @@ class AdRequestService @Autowired constructor(
 ) {
     @Throws(EntityNotFoundException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
-        val owner = userRepo.findById(createAdRequest.ownerId).getOrElse {
-            throw EntityNotFoundException()
-        }
+        val owner = userRepo.findById(
+            createAdRequest.ownerId ?: throw ValidationException("owner id must be provided")
+        )
+            .getOrElse {
+                throw EntityNotFoundException()
+            }
 
         val adRequest = AdRequest(
             owner = owner,
@@ -34,7 +35,7 @@ class AdRequestService @Autowired constructor(
                 createAdRequest.locations,
                 createAdRequest.interests
             ),
-            requestText = createAdRequest.requestText,
+            requestText = createAdRequest.requestText ?: throw ValidationException("owner id must be provided"),
             publishDeadline = createAdRequest.publishDeadline,
             lifeHours = createAdRequest.lifeHours,
             status = AdRequestStatus.SAVED
@@ -131,7 +132,9 @@ class AdRequestService @Autowired constructor(
             status?.let {
                 AdRequestStatus.valueOf(it.uppercase(Locale.getDefault()))
             }
-        } catch (_: IllegalArgumentException) { null }
+        } catch (_: IllegalArgumentException) {
+            null
+        }
 
         if (adRequestStatus != null && ownerId != null)
             return adRequestRepo.findAllByOwnerIdAndStatus(ownerId, adRequestStatus)
@@ -144,15 +147,27 @@ class AdRequestService @Autowired constructor(
     }
 
     data class CreateAdRequest(
-        val ownerId: Long,
-        @NotBlank var requestText: String,
+        val ownerId: Long?,
+        var requestText: String?,
         val ageSegments: String?,
         val incomeSegments: String?,
         val locations: String?,
         val interests: String?,
         var publishDeadline: LocalDate?,
-        @Min(1) var lifeHours: Int?,
-    )
+        val lifeHours: Int?,
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (ownerId == null)
+                throw ValidationException("owner id must be provided")
+            if (requestText == null)
+                throw ValidationException("request text must be provided")
+            if (requestText == "")
+                throw ValidationException("request text must be not empty")
+            if (lifeHours != null && lifeHours < 1)
+                throw ValidationException("life hours must be equal or greater 1")
+        }
+    }
 
     data class UpdateAdRequest(
         val requestText: String?,
@@ -161,11 +176,25 @@ class AdRequestService @Autowired constructor(
         val locations: String?,
         val interests: String?,
         val publishDeadline: LocalDate?,
-        @Min(1) val lifeHours: Int?,
+        val lifeHours: Int?,
         val clarificationText: String?,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (requestText != null && requestText == "")
+                throw ValidationException("request text must be not empty")
+            if (lifeHours != null && lifeHours < 1)
+                throw ValidationException("life hours must be equal or greater 1")
+        }
+    }
 
     data class UpdateAdRequestStatus(
-        @NotEmpty val status: String,
-    )
+        val status: String,
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (status == "")
+                throw ValidationException("status must be provided")
+        }
+    }
 }

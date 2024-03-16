@@ -1,7 +1,6 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotBlank
 
 
 @Entity
@@ -11,9 +10,7 @@ class Image(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @NotBlank
     var alias: String,
 
-    @NotBlank
     var link: String,
 )

@@ -1,6 +1,5 @@
 package su.arlet.business1.services
 
-import jakarta.validation.constraints.NotBlank
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.core.Article
@@ -8,6 +7,7 @@ import su.arlet.business1.core.Image
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UserNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.ArticleRepo
 import su.arlet.business1.repos.ImageRepo
@@ -27,8 +27,8 @@ class ArticleService(
 
         val articleId = articleRepo.save(
             Article(
-                title = createArticleRequest.title,
-                text = createArticleRequest.text,
+                title = createArticleRequest.title ?: throw ValidationException("title must be provided"),
+                text = createArticleRequest.text ?: throw ValidationException("text must be provided"),
                 images = getImagesById(createArticleRequest.imageIds),
                 status = ArticleStatus.ON_REVIEW,
                 author = author,
@@ -139,18 +139,38 @@ class ArticleService(
 
     data class CreateArticleRequest(
         val id: Long,
-        @NotBlank val title: String,
-        @NotBlank val text: String,
+        val title: String?,
+        val text: String?,
         val imageIds: List<Long>,
         val authorId: Long,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (title == null)
+                throw ValidationException("title must be provided")
+            if (text == null)
+                throw ValidationException("text must be provided")
+            if (title == "")
+                throw ValidationException("title must be not empty")
+            if (text == "")
+                throw ValidationException("text must be not empty")
+        }
+    }
 
     data class UpdateArticleRequest(
         val title: String?,
         val text: String?,
         val imageIds: List<Long>?,
         val clarificationText: String?,
-    )
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (title == "")
+                throw ValidationException("title must be not empty")
+            if (text == "")
+                throw ValidationException("text must be not empty")
+        }
+    }
 
     private fun updateArticleFields(article: Article, updateArticleRequest: UpdateArticleRequest) {
         updateArticleRequest.text?.let { article.text = it }

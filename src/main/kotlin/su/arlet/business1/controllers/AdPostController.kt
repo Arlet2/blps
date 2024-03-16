@@ -7,13 +7,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.AdPostService
 
 @RestController
@@ -78,17 +77,16 @@ class AdPostController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createAdPost(
-        @RequestBody @Valid createAdPost: AdPostService.CreateAdPost,
-        bindingResult: BindingResult,
+        @RequestBody createAdPost: AdPostService.CreateAdPost,
     ): ResponseEntity<*> {
-        if (bindingResult.hasErrors())
-            return ResponseEntity("Bad body: ${bindingResult.allErrors}", HttpStatus.BAD_REQUEST)
-
         return try {
+            createAdPost.validate()
             val adRequestId = adPostService.createAdPost(createAdPost)
             ResponseEntity(adRequestId, HttpStatus.CREATED)
         } catch (e: EntityNotFoundException) {
             ResponseEntity("Not found ${e.message ?: ""}", HttpStatus.NOT_FOUND)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in create ad post: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -107,18 +105,16 @@ class AdPostController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateAdPost(
         @PathVariable id: Long,
-        @RequestBody @Valid updateAdPost: AdPostService.UpdateAdPost,
-        bindingResult: BindingResult,
+        @RequestBody updateAdPost: AdPostService.UpdateAdPost,
     ): ResponseEntity<*> {
-
-        if (bindingResult.hasErrors())
-            return ResponseEntity("Bad body: ${bindingResult.allErrors}", HttpStatus.BAD_REQUEST)
-
         return try {
+            updateAdPost.validate()
             adPostService.updateAdPost(adPostId = id, updateAdPost = updateAdPost)
             ResponseEntity.ok(null)
         } catch (e: EntityNotFoundException) {
             ResponseEntity("Not found ${e.message ?: ""}", HttpStatus.NOT_FOUND)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in update ad post: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -136,6 +132,7 @@ class AdPostController(
         @RequestBody newStatus: AdPostService.UpdateAdPostStatus,
     ): ResponseEntity<*> {
         return try {
+            newStatus.validate()
             adPostService.updateAdPostStatus(adPostId = id, updateStatus = newStatus)
             ResponseEntity(null, HttpStatus.OK)
         } catch (_: EntityNotFoundException) {
@@ -144,6 +141,8 @@ class AdPostController(
             ResponseEntity("Unsupported status change", HttpStatus.CONFLICT)
         } catch (_: IllegalArgumentException) {
             ResponseEntity("Unknown status", HttpStatus.BAD_REQUEST)
+        } catch (e: ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             println("Error in update ad post: ${e.message}")
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)

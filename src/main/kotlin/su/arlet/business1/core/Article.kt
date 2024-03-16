@@ -1,7 +1,6 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotBlank
 import su.arlet.business1.core.enums.ArticleStatus
 
 @Entity
@@ -11,10 +10,8 @@ class Article(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @NotBlank
     var title: String,
 
-    @NotBlank
     var text: String,
 
     @ManyToMany

@@ -1,7 +1,6 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotBlank
 import su.arlet.business1.core.enums.UserRole
 
 @Entity
