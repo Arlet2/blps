@@ -152,7 +152,7 @@ class AdPostController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ad post")
-    @ApiResponse(responseCode = "200", description = "Success - deleted ad post")
+    @ApiResponse(responseCode = "200", description = "Success - deleted ad post", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteAdPost(@PathVariable id: Long): ResponseEntity<*> {

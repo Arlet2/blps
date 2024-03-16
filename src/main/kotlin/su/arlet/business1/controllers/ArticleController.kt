@@ -96,7 +96,7 @@ class ArticleController(
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update article info")
-    @ApiResponse(responseCode = "200", description = "Success - updated article")
+    @ApiResponse(responseCode = "200", description = "Success - updated article", content = [Content()])
     @ApiResponse(
         responseCode = "400", description = "Bad body", content = [
             Content(schema = Schema(implementation = String::class)),
@@ -121,7 +121,7 @@ class ArticleController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete article")
-    @ApiResponse(responseCode = "200", description = "Success - deleted article")
+    @ApiResponse(responseCode = "200", description = "Success - deleted article", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteArticle(@PathVariable id: Long): ResponseEntity<*> {

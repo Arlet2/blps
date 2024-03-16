@@ -91,7 +91,7 @@ class UserController(
         }
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Update user info")
     @ApiResponse(responseCode = "200", description = "Success - updated user", content = [Content()])
     @ApiResponse(
@@ -123,7 +123,7 @@ class UserController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user")
-    @ApiResponse(responseCode = "200", description = "Success - deleted user")
+    @ApiResponse(responseCode = "200", description = "Success - deleted user", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteUser(@PathVariable id: Long): ResponseEntity<*> {

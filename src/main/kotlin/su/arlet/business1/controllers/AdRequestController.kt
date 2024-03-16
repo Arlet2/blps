@@ -154,7 +154,7 @@ class AdRequestController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ad request")
-    @ApiResponse(responseCode = "200", description = "Success - deleted ad request")
+    @ApiResponse(responseCode = "200", description = "Success - deleted ad request", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteAdRequest(@PathVariable id: Long): ResponseEntity<*> {

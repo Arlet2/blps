@@ -93,7 +93,7 @@ class ImageController(
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update image")
-    @ApiResponse(responseCode = "200", description = "Success - updated image")
+    @ApiResponse(responseCode = "200", description = "Success - updated image", content = [Content()])
     @ApiResponse(
         responseCode = "400", description = "Bad body", content = [
             Content(schema = Schema(implementation = String::class)),
@@ -118,7 +118,7 @@ class ImageController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete image")
-    @ApiResponse(responseCode = "200", description = "Success - deleted image")
+    @ApiResponse(responseCode = "200", description = "Success - deleted image", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteImage(@PathVariable id: Long): ResponseEntity<*> {
