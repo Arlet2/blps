@@ -7,5 +7,5 @@ class Auditory(
     var ageSegments: String?,
     var incomeSegments: String?,
     var locations: String?,
-    var interests: String?
+    var interests: String?,
 )

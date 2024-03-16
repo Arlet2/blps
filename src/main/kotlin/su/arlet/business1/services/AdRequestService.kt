@@ -1,5 +1,7 @@
 package su.arlet.business1.services
 
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotEmpty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdRequest
@@ -14,7 +16,7 @@ import kotlin.jvm.optionals.getOrElse
 @Service
 class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
-    private val userRepo: UserRepo
+    private val userRepo: UserRepo,
 ) {
     @Throws(EntityNotFoundException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
@@ -124,27 +126,27 @@ class AdRequestService @Autowired constructor(
 
     data class CreateAdRequest(
         val ownerId: Long,
-        var requestText: String,
-        val ageSegments: String?,
-        val incomeSegments: String?,
-        val locations: String?,
-        val interests: String?,
+        @NotEmpty var requestText: String,
+        @NotEmpty val ageSegments: String?,
+        @NotEmpty val incomeSegments: String?,
+        @NotEmpty val locations: String?,
+        @NotEmpty val interests: String?,
         var publishDeadline: LocalDate?,
-        var lifeHours: Int?,
+        @Min(1) var lifeHours: Int?,
     )
 
     data class UpdateAdRequest(
-        val requestText: String?,
-        val ageSegments: String?,
-        val incomeSegments: String?,
-        val locations: String?,
-        val interests: String?,
+        @NotEmpty val requestText: String?,
+        @NotEmpty val ageSegments: String?,
+        @NotEmpty val incomeSegments: String?,
+        @NotEmpty val locations: String?,
+        @NotEmpty val interests: String?,
         val publishDeadline: LocalDate?,
-        val lifeHours: Int?,
-        val clarificationText: String?
+        @Min(1) val lifeHours: Int?,
+        @NotEmpty val clarificationText: String?,
     )
 
     data class UpdateAdRequestStatus(
-        val status: String
+        @NotEmpty val status: String,
     )
 }

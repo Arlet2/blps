@@ -21,5 +21,5 @@ class User(
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    val role: UserRole
+    val role: UserRole,
 )

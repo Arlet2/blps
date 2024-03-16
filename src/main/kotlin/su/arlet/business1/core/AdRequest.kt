@@ -31,5 +31,5 @@ class AdRequest(
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    var status: AdRequestStatus
+    var status: AdRequestStatus,
 )

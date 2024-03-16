@@ -29,5 +29,5 @@ class AdPost(
     val adRequest: AdRequest,
 
     @Enumerated(EnumType.STRING)
-    var status: AdPostStatus
+    var status: AdPostStatus,
 )
