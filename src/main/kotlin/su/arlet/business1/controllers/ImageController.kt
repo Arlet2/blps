@@ -75,7 +75,7 @@ class ImageController(
         ]
     )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun createArticle(
+    fun createImage(
         @RequestBody createImageRequest: ImageService.CreateImageRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
@@ -101,7 +101,7 @@ class ImageController(
     )
     @ApiResponse(responseCode = "404", description = "Not found - article not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun updateArticle(
+    fun updateImage(
         @PathVariable id: Long,
         @RequestBody updateImageRequest: ImageService.UpdateImageRequest,
     ): ResponseEntity<*> {
@@ -121,7 +121,7 @@ class ImageController(
     @ApiResponse(responseCode = "200", description = "Success - deleted image")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun deleteArticle(@PathVariable id: Long): ResponseEntity<*> {
+    fun deleteImage(@PathVariable id: Long): ResponseEntity<*> {
         return try {
             imageService.deleteImage(id)
             ResponseEntity(null, HttpStatus.OK)

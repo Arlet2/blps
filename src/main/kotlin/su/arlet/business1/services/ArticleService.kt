@@ -1,15 +1,17 @@
 package su.arlet.business1.services
 
-import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotBlank
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.Image
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.ArticleRepo
 import su.arlet.business1.repos.ImageRepo
+import su.arlet.business1.repos.UserRepo
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -17,14 +19,19 @@ class ArticleService(
     private val articleRepo: ArticleRepo,
     private val adPostRepo: AdPostRepo,
     private val imageRepo: ImageRepo,
+    private val userRepo: UserRepo,
 ) {
+    @Throws(UserNotFoundException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
+        val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw UserNotFoundException()
+
         val articleId = articleRepo.save(
             Article(
                 title = createArticleRequest.title,
                 text = createArticleRequest.text,
                 images = getImagesById(createArticleRequest.imageIds),
                 status = ArticleStatus.ON_REVIEW,
+                author = author,
             )
         ).id
 
@@ -74,8 +81,8 @@ class ArticleService(
         return articleRepo.findAll()
     }
 
-    @Throws(EntityNotFoundException::class)
-    fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
+    @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
+    fun updateArticleStatus(id: Long, newStatus: ArticleStatus, initiatorId: Long) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         when (newStatus) {
@@ -89,9 +96,18 @@ class ArticleService(
                     throw UnsupportedOperationException()
             }
 
+            ArticleStatus.PUBLISHED -> {
+                if (article.status != ArticleStatus.APPROVED)
+                    throw UnsupportedOperationException()
+            }
+
             ArticleStatus.APPROVED -> {
                 if (article.status != ArticleStatus.ON_REVIEW)
                     throw UnsupportedOperationException()
+
+                val editor = userRepo.findById(initiatorId).getOrNull() ?: throw UserNotFoundException()
+
+                article.editor = editor
             }
         }
 
@@ -123,15 +139,17 @@ class ArticleService(
 
     data class CreateArticleRequest(
         val id: Long,
-        @NotEmpty val title: String,
-        @NotEmpty val text: String,
+        @NotBlank val title: String,
+        @NotBlank val text: String,
         val imageIds: List<Long>,
+        val authorId: Long,
     )
 
     data class UpdateArticleRequest(
-        @NotEmpty val title: String?,
-        @NotEmpty val text: String?,
+        val title: String?,
+        val text: String?,
         val imageIds: List<Long>?,
+        val clarificationText: String?,
     )
 
     private fun updateArticleFields(article: Article, updateArticleRequest: UpdateArticleRequest) {
@@ -152,5 +170,6 @@ class ArticleService(
 
             article.images = newImages
         }
+        updateArticleRequest.clarificationText?.let { article.clarificationText = it }
     }
 }
