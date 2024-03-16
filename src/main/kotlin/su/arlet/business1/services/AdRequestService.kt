@@ -9,6 +9,7 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
@@ -27,6 +28,10 @@ class AdRequestService @Autowired constructor(
                 throw EntityNotFoundException()
             }
 
+        if (createAdRequest.lifeHours == null) {
+            throw ValidationException("life hours must be provided")
+        }
+
         val adRequest = AdRequest(
             owner = owner,
             auditory = Auditory(
@@ -36,8 +41,9 @@ class AdRequestService @Autowired constructor(
                 createAdRequest.interests
             ),
             requestText = createAdRequest.requestText ?: throw ValidationException("owner id must be provided"),
-            publishDeadline = createAdRequest.publishDeadline,
-            lifeHours = createAdRequest.lifeHours,
+            publishDeadline = LocalDate.parse(createAdRequest.publishDeadline),
+            lifeHours = createAdRequest.lifeHours.toIntOrNull()
+                ?: throw ValidationException("life hours must be integer"),
             status = AdRequestStatus.SAVED
         )
 
@@ -63,8 +69,8 @@ class AdRequestService @Autowired constructor(
         updateAdRequest.incomeSegments?.let { adRequest.auditory.incomeSegments = it }
         updateAdRequest.locations?.let { adRequest.auditory.locations = it }
         updateAdRequest.interests?.let { adRequest.auditory.interests = it }
-        updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = it }
-        updateAdRequest.lifeHours?.let { adRequest.lifeHours = it }
+        updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = LocalDate.parse(it) }
+        updateAdRequest.lifeHours?.let { adRequest.lifeHours = it.toIntOrNull() }
         updateAdRequest.clarificationText?.let { adRequest.clarificationText = it }
     }
 
@@ -153,8 +159,8 @@ class AdRequestService @Autowired constructor(
         val incomeSegments: String?,
         val locations: String?,
         val interests: String?,
-        var publishDeadline: LocalDate?,
-        val lifeHours: Int?,
+        var publishDeadline: String?,
+        val lifeHours: String?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
@@ -164,8 +170,18 @@ class AdRequestService @Autowired constructor(
                 throw ValidationException("request text must be provided")
             if (requestText == "")
                 throw ValidationException("request text must be not empty")
-            if (lifeHours != null && lifeHours < 1)
-                throw ValidationException("life hours must be equal or greater 1")
+            if (lifeHours != null) {
+                val value = lifeHours.toIntOrNull() ?: throw ValidationException("life hour must be integer")
+                if (value < 1)
+                    throw ValidationException("life hours must be equal or greater 1")
+            }
+            if (publishDeadline != null) {
+                try {
+                    LocalDate.parse(publishDeadline)
+                } catch (e: DateTimeException) {
+                    throw ValidationException("bad date: ${e.message}")
+                }
+            }
         }
     }
 
@@ -175,16 +191,27 @@ class AdRequestService @Autowired constructor(
         val incomeSegments: String?,
         val locations: String?,
         val interests: String?,
-        val publishDeadline: LocalDate?,
-        val lifeHours: Int?,
+        val publishDeadline: String?,
+        val lifeHours: String?,
         val clarificationText: String?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
             if (requestText != null && requestText == "")
                 throw ValidationException("request text must be not empty")
-            if (lifeHours != null && lifeHours < 1)
-                throw ValidationException("life hours must be equal or greater 1")
+            if (lifeHours != null) {
+                val value = lifeHours.toIntOrNull() ?: throw ValidationException("life hour must be integer")
+                if (value < 1)
+                    throw ValidationException("life hours must be equal or greater 1")
+            }
+
+            if (publishDeadline != null) {
+                try {
+                    LocalDate.parse(publishDeadline)
+                } catch (e: DateTimeException) {
+                    throw ValidationException("bad date: ${e.message}")
+                }
+            }
         }
     }
 
