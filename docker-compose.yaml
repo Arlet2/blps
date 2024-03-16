@@ -1,13 +1,11 @@
 version: "3"
 services:
   main-app:
-    image: arlet2/buisness-lab1-back
+    image: arlet2/business-1
     ports:
       - "127.0.0.1:9000:8080"
     env_file:
       - .env
-    volumes:
-      - /usr/share/static:/static
 
   watchtower:
     image: containrrr/watchtower

@@ -6,7 +6,7 @@ COPY . .
 RUN gradle bootJar
 
 FROM openjdk:21
-ARG jarFileName=business-lab1-back-0.0.1-rolling.jar
+ARG jarFileName=business1-0.0.1-rolling.jar
 
 COPY --from=build /app/build/libs/$jarFileName /
 
