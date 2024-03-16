@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.Image
+import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UserNotFoundException
@@ -74,11 +75,23 @@ class ArticleService(
         return articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
     }
 
-    fun getArticles(status: ArticleStatus?): List<Article> {
-        if (status != null) {
-            return articleRepo.findAllByStatus(status)
+    fun getArticles(status: ArticleStatus?): List<ShortArticle> {
+        val articles = if (status != null) {
+            articleRepo.findAllByStatus(status)
+        } else {
+            articleRepo.findAll()
         }
-        return articleRepo.findAll()
+
+        return articles.map {
+            ShortArticle(
+                id = it.id,
+                title = it.title,
+                status = it.status,
+                clarificationText = it.clarificationText,
+                authorId = it.author,
+                editor = it.editor,
+            )
+        }
     }
 
     @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
@@ -156,6 +169,15 @@ class ArticleService(
                 throw ValidationException("text must be not empty")
         }
     }
+
+    data class ShortArticle(
+        val id: Long,
+        val title: String,
+        val status: ArticleStatus,
+        val clarificationText: String?,
+        val authorId: User,
+        val editor: User?,
+    )
 
     data class UpdateArticleRequest(
         val title: String?,

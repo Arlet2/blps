@@ -27,7 +27,7 @@ class ArticleController(
     @Operation(summary = "Get articles by filters")
     @ApiResponse(
         responseCode = "200", description = "OK", content = [
-            Content(array = ArraySchema(items = Schema(implementation = Article::class)))
+            Content(array = ArraySchema(items = Schema(implementation = ArticleService.ShortArticle::class)))
         ]
     )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
