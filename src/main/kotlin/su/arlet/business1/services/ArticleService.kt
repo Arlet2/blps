@@ -1,5 +1,6 @@
 package su.arlet.business1.services
 
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.core.Article
@@ -75,11 +76,16 @@ class ArticleService(
         return articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
     }
 
-    fun getArticles(status: ArticleStatus?): List<ShortArticle> {
+    fun getArticles(status: ArticleStatus?, offset: Int?, limit: Int?): List<ShortArticle> {
+        val page = PageRequest.of(
+            maxOf(offset ?: 0, 0),
+            minOf(maxOf(limit ?: 10, 10), 100)
+        )
+
         val articles = if (status != null) {
-            articleRepo.findAllByStatus(status)
+            articleRepo.findAllByStatus(status, page)
         } else {
-            articleRepo.findAll()
+            articleRepo.findAll(page)
         }
 
         return articles.map {

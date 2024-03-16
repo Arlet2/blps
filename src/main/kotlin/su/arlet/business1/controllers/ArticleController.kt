@@ -33,9 +33,11 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getArticles(
         @RequestParam(name = "status", required = false) status: ArticleStatus?,
+        @RequestParam(name = "offset", required = false) offset: Int?,
+        @RequestParam(name = "limit", required = false) limit: Int?,
     ): ResponseEntity<*> {
         return try {
-            val articles = articleService.getArticles(status)
+            val articles = articleService.getArticles(status, offset, limit)
             ResponseEntity(articles, HttpStatus.OK)
         } catch (e: Exception) {
             println("Error in get articles: ${e.message}")
