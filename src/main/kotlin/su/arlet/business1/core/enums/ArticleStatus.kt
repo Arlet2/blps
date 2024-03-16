@@ -4,5 +4,5 @@ enum class ArticleStatus {
     ON_REVIEW,
     NEED_FIXES,
     PUBLISHED,
-
+    APPROVED,
 }

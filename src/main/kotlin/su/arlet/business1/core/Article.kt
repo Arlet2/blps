@@ -29,4 +29,9 @@ class Article(
     var status: ArticleStatus,
 
     var clarificationText: String? = null,
+
+    @ManyToOne
+    var author: User,
+    @ManyToOne
+    var editor: User? = null,
 )

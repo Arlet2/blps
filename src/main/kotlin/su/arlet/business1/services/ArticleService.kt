@@ -10,6 +10,7 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.ArticleRepo
 import su.arlet.business1.repos.ImageRepo
+import su.arlet.business1.repos.UserRepo
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -17,14 +18,18 @@ class ArticleService(
     private val articleRepo: ArticleRepo,
     private val adPostRepo: AdPostRepo,
     private val imageRepo: ImageRepo,
+    private val userRepo: UserRepo,
 ) {
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
+        val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw EntityNotFoundException()
+
         val articleId = articleRepo.save(
             Article(
                 title = createArticleRequest.title,
                 text = createArticleRequest.text,
                 images = getImagesById(createArticleRequest.imageIds),
                 status = ArticleStatus.ON_REVIEW,
+                author = author,
             )
         ).id
 
@@ -75,7 +80,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class, UnsupportedOperationException::class)
-    fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
+    fun updateArticleStatus(id: Long, newStatus: ArticleStatus, initiatorId: Long) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         when (newStatus) {
@@ -90,8 +95,17 @@ class ArticleService(
             }
 
             ArticleStatus.PUBLISHED -> {
+                if (article.status != ArticleStatus.APPROVED)
+                    throw UnsupportedOperationException()
+            }
+
+            ArticleStatus.APPROVED -> {
                 if (article.status != ArticleStatus.ON_REVIEW)
                     throw UnsupportedOperationException()
+
+                val editor = userRepo.findById(initiatorId).getOrNull() ?: throw EntityNotFoundException()
+
+                article.editor = editor
             }
         }
 
@@ -126,6 +140,7 @@ class ArticleService(
         @NotBlank val title: String,
         @NotBlank val text: String,
         val imageIds: List<Long>,
+        val authorId: Long,
     )
 
     data class UpdateArticleRequest(
