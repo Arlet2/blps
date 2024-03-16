@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
@@ -76,7 +77,7 @@ class ImageController(
     )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createImage(
-        @RequestBody createImageRequest: ImageService.CreateImageRequest,
+        @RequestBody @Valid createImageRequest: ImageService.CreateImageRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
         if (bindingResult.hasErrors())
@@ -103,7 +104,7 @@ class ImageController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateImage(
         @PathVariable id: Long,
-        @RequestBody updateImageRequest: ImageService.UpdateImageRequest,
+        @RequestBody @Valid updateImageRequest: ImageService.UpdateImageRequest,
     ): ResponseEntity<*> {
         return try {
             imageService.updateImage(id, updateImageRequest)

@@ -107,7 +107,7 @@ class AdPostController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateAdPost(
         @PathVariable id: Long,
-        @RequestBody updateAdPost: AdPostService.UpdateAdPost,
+        @RequestBody @Valid updateAdPost: AdPostService.UpdateAdPost,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
 

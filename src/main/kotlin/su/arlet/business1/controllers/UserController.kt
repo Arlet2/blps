@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
@@ -73,7 +74,7 @@ class UserController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createUser(
-        @RequestBody createUserRequest: UserService.CreateUserRequest,
+        @RequestBody @Valid createUserRequest: UserService.CreateUserRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
 
@@ -103,7 +104,7 @@ class UserController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUser(
         @PathVariable id: Long,
-        @RequestBody updateUserRequest: UserService.UpdateUserRequest,
+        @RequestBody @Valid updateUserRequest: UserService.UpdateUserRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
 

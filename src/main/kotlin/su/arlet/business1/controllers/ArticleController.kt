@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
@@ -77,7 +78,7 @@ class ArticleController(
     )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createArticle(
-        @RequestBody createArticleRequest: ArticleService.CreateArticleRequest,
+        @RequestBody @Valid createArticleRequest: ArticleService.CreateArticleRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
         if (bindingResult.hasErrors())
@@ -106,7 +107,7 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateArticle(
         @PathVariable id: Long,
-        @RequestBody updatedArticle: ArticleService.UpdateArticleRequest,
+        @RequestBody @Valid updatedArticle: ArticleService.UpdateArticleRequest,
     ): ResponseEntity<*> {
         return try {
             articleService.updateArticle(id, updatedArticle)

@@ -109,7 +109,7 @@ class AdRequestController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateAdRequest(
         @PathVariable id: Long,
-        @RequestBody updateAdRequest: AdRequestService.UpdateAdRequest,
+        @RequestBody @Valid updateAdRequest: AdRequestService.UpdateAdRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
 
