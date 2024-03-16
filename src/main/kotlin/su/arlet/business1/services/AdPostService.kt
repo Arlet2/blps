@@ -1,11 +1,6 @@
 package su.arlet.business1.services
 
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToOne
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.NotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.*
@@ -15,7 +10,6 @@ import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.ImageRepo
 import su.arlet.business1.repos.UserRepo
-import java.time.LocalDate
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -135,9 +129,9 @@ class AdPostService @Autowired constructor(
     }
 
     data class CreateAdPost(
-        @NotEmpty var title: String,
-        @NotEmpty var body: String,
-        @NotEmpty var targetLink: String,
+        @NotBlank var title: String,
+        @NotBlank var body: String,
+        @NotBlank var targetLink: String,
         var salesEditorId: Long?,
         var imageId: Long?,
         val adRequestId: Long,
