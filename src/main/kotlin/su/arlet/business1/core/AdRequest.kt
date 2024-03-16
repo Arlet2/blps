@@ -15,7 +15,7 @@ class AdRequest(
     @JoinColumn(name = "ownerId")
     val owner: User,
     @Embedded
-    var auditory: Auditory,
+    var auditory: Auditory?,
 
     var requestText: String,
     var clarificationText: String? = null,

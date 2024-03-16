@@ -22,10 +22,7 @@ class AdRequestService @Autowired constructor(
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
         val owner = userRepo.findById(
             createAdRequest.ownerId ?: throw ValidationException("owner id must be provided")
-        )
-            .getOrElse {
-                throw EntityNotFoundException()
-            }
+        ).getOrElse { throw EntityNotFoundException() }
 
         val adRequest = AdRequest(
             owner = owner,
@@ -59,10 +56,22 @@ class AdRequestService @Autowired constructor(
 
     private fun updateAdRequestFields(adRequest: AdRequest, updateAdRequest: UpdateAdRequest) {
         updateAdRequest.requestText?.let { adRequest.requestText = it }
-        updateAdRequest.ageSegments?.let { adRequest.auditory.ageSegments = it }
-        updateAdRequest.incomeSegments?.let { adRequest.auditory.incomeSegments = it }
-        updateAdRequest.locations?.let { adRequest.auditory.locations = it }
-        updateAdRequest.interests?.let { adRequest.auditory.interests = it }
+        updateAdRequest.ageSegments?.let {
+            if (adRequest.auditory != null) adRequest.auditory!!.ageSegments = it
+            else adRequest.auditory = Auditory(ageSegments = it)
+        }
+        updateAdRequest.incomeSegments?.let {
+            if (adRequest.auditory != null) adRequest.auditory!!.incomeSegments = it
+            else adRequest.auditory = Auditory(incomeSegments = it)
+        }
+        updateAdRequest.locations?.let {
+            if (adRequest.auditory != null) adRequest.auditory!!.locations = it
+            else adRequest.auditory = Auditory(locations = it)
+        }
+        updateAdRequest.interests?.let {
+            if (adRequest.auditory != null) adRequest.auditory!!.interests = it
+            else adRequest.auditory = Auditory(interests = it)
+        }
         updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = it }
         updateAdRequest.lifeHours?.let { adRequest.lifeHours = it }
         updateAdRequest.clarificationText?.let { adRequest.clarificationText = it }
