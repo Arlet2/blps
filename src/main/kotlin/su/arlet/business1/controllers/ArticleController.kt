@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -33,8 +35,8 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getArticles(
         @RequestParam(name = "status", required = false) status: ArticleStatus?,
-        @RequestParam(name = "offset", required = false) offset: Int?,
-        @RequestParam(name = "limit", required = false) limit: Int?,
+        @RequestParam(name = "offset", defaultValue = "0") offset: Int,
+        @RequestParam(name = "limit", defaultValue = "20") limit: Int,
     ): ResponseEntity<*> {
         return try {
             val articles = articleService.getArticles(status, offset, limit)

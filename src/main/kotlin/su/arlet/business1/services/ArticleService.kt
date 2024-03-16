@@ -76,11 +76,8 @@ class ArticleService(
         return articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
     }
 
-    fun getArticles(status: ArticleStatus?, offset: Int?, limit: Int?): List<ShortArticle> {
-        val page = PageRequest.of(
-            maxOf(offset ?: 0, 0),
-            minOf(maxOf(limit ?: 10, 10), 100)
-        )
+    fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
+        val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
         val articles = if (status != null) {
             articleRepo.findAllByStatus(status, page)
