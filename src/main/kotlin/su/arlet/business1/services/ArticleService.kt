@@ -157,7 +157,6 @@ class ArticleService(
     }
 
     data class CreateArticleRequest(
-        val id: Long,
         val title: String?,
         val text: String?,
         val imageIds: List<Long>,
