@@ -7,6 +7,7 @@ import su.arlet.business1.core.Article
 import su.arlet.business1.core.Image
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.ArticleRepo
 import su.arlet.business1.repos.ImageRepo
@@ -20,8 +21,9 @@ class ArticleService(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
 ) {
+    @Throws(UserNotFoundException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
-        val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw EntityNotFoundException()
+        val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw UserNotFoundException()
 
         val articleId = articleRepo.save(
             Article(
@@ -79,7 +81,7 @@ class ArticleService(
         return articleRepo.findAll()
     }
 
-    @Throws(EntityNotFoundException::class, UnsupportedOperationException::class)
+    @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus, initiatorId: Long) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -103,7 +105,7 @@ class ArticleService(
                 if (article.status != ArticleStatus.ON_REVIEW)
                     throw UnsupportedOperationException()
 
-                val editor = userRepo.findById(initiatorId).getOrNull() ?: throw EntityNotFoundException()
+                val editor = userRepo.findById(initiatorId).getOrNull() ?: throw UserNotFoundException()
 
                 article.editor = editor
             }
