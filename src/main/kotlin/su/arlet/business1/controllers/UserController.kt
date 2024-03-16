@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.UserService
+
 
 @RestController
 @RequestMapping("\${api.path}/users")
@@ -74,12 +76,15 @@ class UserController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createUser(
-        @RequestBody @Valid createUserRequest: UserService.CreateUserRequest,
+        @RequestBody createUserRequest: UserService.CreateUserRequest,
         bindingResult: BindingResult,
     ): ResponseEntity<*> {
 
-        if (bindingResult.hasErrors())
-            return ResponseEntity("Bad body: ${bindingResult.allErrors}", HttpStatus.BAD_REQUEST)
+        try {
+            createUserRequest.validate()
+        } catch (e : ValidationException) {
+            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
+        }
 
         return try {
             val adRequestId = userService.createUser(createUserRequest)

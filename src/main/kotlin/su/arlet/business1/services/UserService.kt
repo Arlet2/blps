@@ -1,11 +1,11 @@
 package su.arlet.business1.services
 
-import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.UserRepo
 import kotlin.jvm.optionals.getOrElse
 
@@ -19,8 +19,10 @@ class UserService @Autowired constructor(
 
         val user = User(
             name = createUserRequest.name,
-            login = createUserRequest.login,
-            passwordHash = hashPassword(createUserRequest.password),
+            login = createUserRequest.login ?: throw ValidationException("login must be provided"),
+            passwordHash = hashPassword(
+                createUserRequest.password ?: throw ValidationException("password must be provided")
+            ),
             role = UserRole.DEFAULT
         )
 
@@ -70,9 +72,21 @@ class UserService @Autowired constructor(
 
     data class CreateUserRequest(
         val name: String?,
-        @NotBlank val login: String,
-        @NotBlank var password: String,
-    )
+        val login: String?,
+        var password: String?,
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (login == null)
+                throw ValidationException("login must be provided")
+            if (password == null)
+                throw ValidationException("password must be provided")
+            if (login == "")
+                throw ValidationException("login must be not empty")
+            if (password == "")
+                throw ValidationException("password must be not empty")
+        }
+    }
 
     data class UpdateUserRequest(
         val name: String?,

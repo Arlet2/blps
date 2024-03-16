@@ -11,12 +11,9 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     var name: String?,
-    @NotBlank
     val login: String,
-    @NotBlank
     var passwordHash: String,
 
-    @NotBlank
     @Enumerated(EnumType.STRING)
     val role: UserRole,
 )
