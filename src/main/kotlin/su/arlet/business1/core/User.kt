@@ -1,8 +1,7 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.NotBlank
 import su.arlet.business1.core.enums.UserRole
 
 @Entity
@@ -12,14 +11,12 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     var name: String?,
-    @NotNull
-    @NotEmpty
+    @NotBlank
     val login: String,
-    @NotNull
-    @NotEmpty
+    @NotBlank
     var passwordHash: String,
 
-    @NotNull
+    @NotBlank
     @Enumerated(EnumType.STRING)
-    val role: UserRole
+    val role: UserRole,
 )

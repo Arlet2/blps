@@ -1,13 +1,37 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotBlank
+import su.arlet.business1.core.enums.ArticleStatus
 
 @Entity
 @Table(name = "articles")
 class Article(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
-    val title: String,
-    val text: String,
+    var id: Long = 0,
+
+    @NotBlank
+    var title: String,
+
+    @NotBlank
+    var text: String,
+
+    @ManyToMany
+    @JoinTable(name = "article_images")
+    var images: List<Image>,
+
+    @ManyToMany
+    @JoinTable(name = "article_ad_posts")
+    var adPosts: List<AdPost> = emptyList(),
+
+    @Enumerated(EnumType.STRING)
+    var status: ArticleStatus,
+
+    var clarificationText: String? = null,
+
+    @ManyToOne
+    var author: User,
+    @ManyToOne
+    var editor: User? = null,
 )

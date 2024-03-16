@@ -1,5 +1,6 @@
 package su.arlet.business1.services
 
+import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
@@ -69,12 +70,12 @@ class UserService @Autowired constructor(
 
     data class CreateUserRequest(
         val name: String?,
-        val login: String,
-        var password: String
+        @NotBlank val login: String,
+        @NotBlank var password: String,
     )
 
     data class UpdateUserRequest(
         val name: String?,
-        var password: String?
+        var password: String?,
     )
 }
