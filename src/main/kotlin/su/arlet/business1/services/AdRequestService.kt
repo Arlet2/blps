@@ -9,8 +9,8 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
-import java.time.DateTimeException
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -19,7 +19,7 @@ class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val userRepo: UserRepo,
 ) {
-    @Throws(EntityNotFoundException::class, ValidationException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class, DateTimeParseException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
         val owner = userRepo.findById(
             createAdRequest.ownerId ?: throw ValidationException("owner id must be provided")
@@ -49,7 +49,7 @@ class AdRequestService @Autowired constructor(
         return adRequestId
     }
 
-    @Throws(EntityNotFoundException::class)
+    @Throws(EntityNotFoundException::class, DateTimeParseException::class)
     fun updateAdRequest(adRequestId: Long, updateAdRequest: UpdateAdRequest) {
         val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
             throw EntityNotFoundException()
@@ -78,8 +78,10 @@ class AdRequestService @Autowired constructor(
             if (adRequest.auditory != null) adRequest.auditory!!.interests = it
             else adRequest.auditory = Auditory(interests = it)
         }
-        updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = it }
-        updateAdRequest.lifeHours?.let { adRequest.lifeHours = it }
+        updateAdRequest.publishDeadline?.let { adRequest.publishDeadline = LocalDate.parse(it) }
+        updateAdRequest.lifeHours?.let {
+            adRequest.lifeHours = it.toIntOrNull() ?: throw ValidationException("life hours must be integer")
+        }
         updateAdRequest.clarificationText?.let { adRequest.clarificationText = it }
     }
 
@@ -187,7 +189,7 @@ class AdRequestService @Autowired constructor(
             if (publishDeadline != null) {
                 try {
                     LocalDate.parse(publishDeadline)
-                } catch (e: DateTimeException) {
+                } catch (e: DateTimeParseException) {
                     throw ValidationException("bad date: ${e.message}")
                 }
             }
@@ -217,7 +219,7 @@ class AdRequestService @Autowired constructor(
             if (publishDeadline != null) {
                 try {
                     LocalDate.parse(publishDeadline)
-                } catch (e: DateTimeException) {
+                } catch (e: DateTimeParseException) {
                     throw ValidationException("bad date: ${e.message}")
                 }
             }
