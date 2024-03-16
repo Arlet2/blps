@@ -29,11 +29,6 @@ class AdPostController(
             Content(array = ArraySchema(items = Schema(implementation = AdPost::class)))
         ]
     )
-    @ApiResponse(
-        responseCode = "400", description = "Bad post body", content = [
-            Content(schema = Schema(implementation = String::class))
-        ]
-    )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getAdPosts(
         @RequestParam(name = "status", required = false) status: String?,
@@ -52,11 +47,6 @@ class AdPostController(
     @ApiResponse(
         responseCode = "200", description = "Success - found ad post", content = [
             Content(schema = Schema(implementation = AdPost::class))
-        ]
-    )
-    @ApiResponse(
-        responseCode = "400", description = "Bad body", content = [
-            Content(schema = Schema(implementation = String::class))
         ]
     )
     @ApiResponse(responseCode = "404", description = "Not found - ad post not found", content = [])
@@ -138,12 +128,7 @@ class AdPostController(
     @PutMapping("/{id}/status")
     @Operation(summary = "Update ad post status")
     @ApiResponse(responseCode = "200", description = "Updated ad post status", content = [Content()])
-    @ApiResponse(
-        responseCode = "400", description = "Bad body", content = [
-            Content(schema = Schema(implementation = String::class))
-        ]
-    )
-    @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
+    @ApiResponse(responseCode = "404", description = "Not found - ad post not found", content = [Content()])
     @ApiResponse(responseCode = "409", description = "Invalid status change", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateAdPostStatus(
@@ -169,11 +154,6 @@ class AdPostController(
     @Operation(summary = "Delete ad post")
     @ApiResponse(responseCode = "200", description = "Success - deleted ad post")
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
-    @ApiResponse(
-        responseCode = "400", description = "Bad body", content = [
-            Content(schema = Schema(implementation = String::class))
-        ]
-    )
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteAdPost(@PathVariable id: Long): ResponseEntity<*> {
         return try {
