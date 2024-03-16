@@ -13,7 +13,7 @@ import kotlin.jvm.optionals.getOrElse
 class UserService @Autowired constructor(
     private val userRepo: UserRepo,
 ) {
-    @Throws(EntityNotFoundException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createUser(createUserRequest: CreateUserRequest): Long {
         // TODO check login unique
 

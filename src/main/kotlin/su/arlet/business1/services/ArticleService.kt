@@ -21,7 +21,7 @@ class ArticleService(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
 ) {
-    @Throws(UserNotFoundException::class)
+    @Throws(UserNotFoundException::class, ValidationException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
         val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw UserNotFoundException()
 
