@@ -18,7 +18,7 @@ class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val userRepo: UserRepo,
 ) {
-    @Throws(EntityNotFoundException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
         val owner = userRepo.findById(
             createAdRequest.ownerId ?: throw ValidationException("owner id must be provided")

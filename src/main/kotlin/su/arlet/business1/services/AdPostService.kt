@@ -21,7 +21,7 @@ class AdPostService @Autowired constructor(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
 ) {
-    @Throws(EntityNotFoundException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdPost(createAdPost: CreateAdPost): Long {
         val adRequest = adRequestRepo.findById(createAdPost.adRequestId).getOrElse {
             throw EntityNotFoundException("Ad Request")

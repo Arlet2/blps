@@ -12,6 +12,7 @@ import kotlin.jvm.optionals.getOrNull
 class ImageService(
     private val imageRepo: ImageRepo,
 ) {
+    @Throws(ValidationException::class)
     fun addImage(createImageRequest: CreateImageRequest): Long {
         val imageId = imageRepo.save(
             Image(
