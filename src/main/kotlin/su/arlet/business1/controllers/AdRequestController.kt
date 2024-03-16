@@ -107,7 +107,7 @@ class AdRequestController(
         }
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Update ad request info")
     @ApiResponse(responseCode = "200", description = "Success - updated ad request", content = [Content()])
     @ApiResponse(

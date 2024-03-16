@@ -1,6 +1,7 @@
 package su.arlet.business1.services
 
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -144,24 +145,24 @@ class AdRequestService @Autowired constructor(
 
     data class CreateAdRequest(
         val ownerId: Long,
-        @NotEmpty var requestText: String,
-        @NotEmpty val ageSegments: String?,
-        @NotEmpty val incomeSegments: String?,
-        @NotEmpty val locations: String?,
-        @NotEmpty val interests: String?,
+        @NotBlank var requestText: String,
+        val ageSegments: String?,
+        val incomeSegments: String?,
+        val locations: String?,
+        val interests: String?,
         var publishDeadline: LocalDate?,
         @Min(1) var lifeHours: Int?,
     )
 
     data class UpdateAdRequest(
-        @NotEmpty val requestText: String?,
-        @NotEmpty val ageSegments: String?,
-        @NotEmpty val incomeSegments: String?,
-        @NotEmpty val locations: String?,
-        @NotEmpty val interests: String?,
+        val requestText: String?,
+        val ageSegments: String?,
+        val incomeSegments: String?,
+        val locations: String?,
+        val interests: String?,
         val publishDeadline: LocalDate?,
         @Min(1) val lifeHours: Int?,
-        @NotEmpty val clarificationText: String?,
+        val clarificationText: String?,
     )
 
     data class UpdateAdRequestStatus(

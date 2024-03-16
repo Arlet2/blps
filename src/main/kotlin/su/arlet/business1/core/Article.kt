@@ -1,7 +1,7 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotBlank
 import su.arlet.business1.core.enums.ArticleStatus
 
 @Entity
@@ -11,10 +11,10 @@ class Article(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @NotEmpty
+    @NotBlank
     var title: String,
 
-    @NotEmpty
+    @NotBlank
     var text: String,
 
     @ManyToMany
@@ -25,5 +25,13 @@ class Article(
     @JoinTable(name = "article_ad_posts")
     var adPosts: List<AdPost> = emptyList(),
 
+    @Enumerated(EnumType.STRING)
     var status: ArticleStatus,
+
+    var clarificationText: String? = null,
+
+    @ManyToOne
+    var author: User,
+    @ManyToOne
+    var editor: User? = null,
 )
