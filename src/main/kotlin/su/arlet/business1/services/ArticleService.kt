@@ -1,6 +1,6 @@
 package su.arlet.business1.services
 
-import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotBlank
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.core.Article
@@ -74,7 +74,7 @@ class ArticleService(
         return articleRepo.findAll()
     }
 
-    @Throws(EntityNotFoundException::class)
+    @Throws(EntityNotFoundException::class, UnsupportedOperationException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -89,7 +89,7 @@ class ArticleService(
                     throw UnsupportedOperationException()
             }
 
-            ArticleStatus.APPROVED -> {
+            ArticleStatus.PUBLISHED -> {
                 if (article.status != ArticleStatus.ON_REVIEW)
                     throw UnsupportedOperationException()
             }
@@ -123,15 +123,16 @@ class ArticleService(
 
     data class CreateArticleRequest(
         val id: Long,
-        @NotEmpty val title: String,
-        @NotEmpty val text: String,
+        @NotBlank val title: String,
+        @NotBlank val text: String,
         val imageIds: List<Long>,
     )
 
     data class UpdateArticleRequest(
-        @NotEmpty val title: String?,
-        @NotEmpty val text: String?,
+        val title: String?,
+        val text: String?,
         val imageIds: List<Long>?,
+        val clarificationText: String?,
     )
 
     private fun updateArticleFields(article: Article, updateArticleRequest: UpdateArticleRequest) {
@@ -152,5 +153,6 @@ class ArticleService(
 
             article.images = newImages
         }
+        updateArticleRequest.clarificationText?.let { article.clarificationText = it }
     }
 }

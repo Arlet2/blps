@@ -1,7 +1,7 @@
 package su.arlet.business1.core
 
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import su.arlet.business1.core.enums.AdPostStatus
 
@@ -13,13 +13,13 @@ class AdPost(
     val id: Long = 0,
 
     @NotNull
-    @NotEmpty
+    @NotBlank
     var title: String,
     @NotNull
-    @NotEmpty
+    @NotBlank
     var body: String,
     @NotNull
-    @NotEmpty
+    @NotBlank
     var targetLink: String,
 
     @ManyToOne

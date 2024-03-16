@@ -134,7 +134,7 @@ class ArticleController(
 
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     @Operation(summary = "Update article status")
     @ApiResponse(responseCode = "200", description = "Updated article", content = [Content()])
     @ApiResponse(
