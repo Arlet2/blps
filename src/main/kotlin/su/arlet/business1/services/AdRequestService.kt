@@ -11,6 +11,7 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import java.time.LocalDate
+import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
@@ -35,7 +36,7 @@ class AdRequestService @Autowired constructor(
             requestText = createAdRequest.requestText,
             publishDeadline = createAdRequest.publishDeadline,
             lifeHours = createAdRequest.lifeHours,
-            status = AdRequestStatus.READY_TO_CHECK
+            status = AdRequestStatus.SAVED
         )
 
         val adRequestId = adRequestRepo.save(adRequest).id
@@ -75,8 +76,12 @@ class AdRequestService @Autowired constructor(
         if (adRequest.status == newStatus) return
 
         when (newStatus) {
-            AdRequestStatus.READY_TO_CHECK ->
+            AdRequestStatus.SAVED ->
                 if (adRequest.status != AdRequestStatus.NEEDS_CLARIFICATION)
+                    throw UnsupportedOperationException()
+
+            AdRequestStatus.READY_TO_CHECK ->
+                if (adRequest.status != AdRequestStatus.SAVED)
                     throw UnsupportedOperationException()
 
             AdRequestStatus.NEEDS_CLARIFICATION ->
@@ -120,7 +125,20 @@ class AdRequestService @Autowired constructor(
         }
     }
 
-    fun getAdRequests(): List<AdRequest> {
+    fun getAdRequests(ownerId: Long?, status: String?): List<AdRequest> {
+        val adRequestStatus = try {
+            status?.let {
+                AdRequestStatus.valueOf(it.uppercase(Locale.getDefault()))
+            }
+        } catch (_: IllegalArgumentException) { null }
+
+        if (adRequestStatus != null && ownerId != null)
+            return adRequestRepo.findAllByOwnerIdAndStatus(ownerId, adRequestStatus)
+        if (adRequestStatus != null)
+            return adRequestRepo.findAllByStatus(adRequestStatus)
+        if (ownerId != null)
+            return adRequestRepo.findAllByOwnerId(ownerId)
+
         return adRequestRepo.findAll()
     }
 
