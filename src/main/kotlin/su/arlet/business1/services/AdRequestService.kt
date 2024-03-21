@@ -188,11 +188,14 @@ class AdRequestService @Autowired constructor(
                     throw ValidationException("life hours must be equal or greater 1")
             }
             if (publishDeadline != null) {
-                try {
+                val date = try {
                     LocalDate.parse(publishDeadline)
                 } catch (e: DateTimeParseException) {
                     throw ValidationException("bad date: ${e.message}")
                 }
+
+                if (date.isBefore(LocalDate.now()))
+                    throw ValidationException("publish dead line must be today or later")
             }
         }
     }
