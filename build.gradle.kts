@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "su.arlet"
-version = "0.0.1-rolling"
+version = "0.0.2-rolling"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

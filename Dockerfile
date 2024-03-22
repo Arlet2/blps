@@ -9,4 +9,4 @@ FROM openjdk:21
 
 COPY --from=build /app/build/libs/business1-0.0.1-rolling.jar /
 
-CMD java -jar business1-0.0.1-rolling.jar
+CMD java -jar business1-0.0.2-rolling.jar
