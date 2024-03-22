@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.AdRequestRepo
@@ -75,26 +76,31 @@ class AdPostService @Autowired constructor(
         }
     }
 
-    @Throws(EntityNotFoundException::class, IllegalArgumentException::class, UnsupportedOperationException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
     fun updateAdPostStatus(adPostId: Long, updateStatus: UpdateAdPostStatus) {
         val adPost = adPostRepo.findById(adPostId).getOrElse {
             throw EntityNotFoundException()
         }
-        val newStatus = AdPostStatus.valueOf(updateStatus.status.uppercase(Locale.getDefault()))
+
+        val newStatus = try {
+            AdPostStatus.valueOf(updateStatus.status.uppercase(Locale.getDefault()))
+        } catch (e: IllegalArgumentException) {
+            throw ValidationException("unknown status")
+        }
 
         if (adPost.status == newStatus) return
 
         when (newStatus) {
             AdPostStatus.SAVED ->
-                throw UnsupportedOperationException()
+                throw UnsupportedStatusChangeException()
 
             AdPostStatus.READY_TO_PUBLISH ->
                 if (adPost.status != AdPostStatus.SAVED)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdPostStatus.PUBLISHED ->
                 if (adPost.status != AdPostStatus.READY_TO_PUBLISH)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdPostStatus.EXPIRED -> {}
         }

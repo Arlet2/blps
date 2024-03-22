@@ -6,15 +6,11 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.enums.ArticleStatus
-import su.arlet.business1.exceptions.EntityNotFoundException
-import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.ArticleService
 
@@ -38,13 +34,8 @@ class ArticleController(
         @RequestParam(name = "offset", defaultValue = "0") offset: Int,
         @RequestParam(name = "limit", defaultValue = "20") limit: Int,
     ): ResponseEntity<*> {
-        return try {
-            val articles = articleService.getArticles(status, offset, limit)
-            ResponseEntity(articles, HttpStatus.OK)
-        } catch (e: Exception) {
-            println("Error in get articles: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        val articles = articleService.getArticles(status, offset, limit)
+        return ResponseEntity(articles, HttpStatus.OK)
     }
 
     @GetMapping("/{id}")
@@ -57,14 +48,7 @@ class ArticleController(
     @ApiResponse(responseCode = "404", description = "Not found - article not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getArticleById(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            ResponseEntity(articleService.getArticle(id), HttpStatus.OK)
-        } catch (e: EntityNotFoundException) {
-            ResponseEntity("not found", HttpStatus.NOT_FOUND)
-        } catch (e: Exception) {
-            println("Error in get article by id: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        return ResponseEntity(articleService.getArticle(id), HttpStatus.OK)
     }
 
     @PostMapping("/")
@@ -83,18 +67,9 @@ class ArticleController(
     fun createArticle(
         @RequestBody createArticleRequest: ArticleService.CreateArticleRequest,
     ): ResponseEntity<*> {
-        return try {
-            createArticleRequest.validate()
-            val articleId = articleService.addArticle(createArticleRequest)
-            ResponseEntity(articleId, HttpStatus.CREATED)
-        } catch (_: UserNotFoundException) {
-            ResponseEntity("user is not found", HttpStatus.CONFLICT)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in create article: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        createArticleRequest.validate()
+        val articleId = articleService.addArticle(createArticleRequest)
+        return ResponseEntity(articleId, HttpStatus.CREATED)
     }
 
     @PatchMapping("/{id}")
@@ -111,18 +86,9 @@ class ArticleController(
         @PathVariable id: Long,
         @RequestBody updatedArticle: ArticleService.UpdateArticleRequest,
     ): ResponseEntity<*> {
-        return try {
-            updatedArticle.validate()
-            articleService.updateArticle(id, updatedArticle)
-            ResponseEntity(null, HttpStatus.OK)
-        } catch (e: EntityNotFoundException) {
-            ResponseEntity(null, HttpStatus.NOT_FOUND)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in update article: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        updatedArticle.validate()
+        articleService.updateArticle(id, updatedArticle)
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     @DeleteMapping("/{id}")
@@ -131,16 +97,8 @@ class ArticleController(
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteArticle(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            articleService.deleteArticle(id)
-            ResponseEntity(null, HttpStatus.OK)
-        } catch (e: EntityNotFoundException) {
-            ResponseEntity(null, HttpStatus.NO_CONTENT)
-        } catch (e: Exception) {
-            println("Error in delete article: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-
+        articleService.deleteArticle(id)
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     @PatchMapping("/{id}/status")
@@ -158,27 +116,16 @@ class ArticleController(
         @PathVariable id: Long,
         @RequestBody updateStatusRequest: UpdateStatusRequest,
     ): ResponseEntity<*> {
-        return try {
-            updateStatusRequest.validate()
+        updateStatusRequest.validate()
 
-            articleService.updateArticleStatus(
-                id,
-                ArticleStatus.valueOf(
-                    updateStatusRequest.newStatus ?: throw ValidationException("new status must be provided")
-                ),
-                updateStatusRequest.initiatorId ?: throw ValidationException("initiator ID must be provided"),
-            )
-            ResponseEntity(null, HttpStatus.OK)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (_: UnsupportedOperationException) {
-            ResponseEntity("Unsupported status change", HttpStatus.CONFLICT)
-        } catch (_: UserNotFoundException) {
-            ResponseEntity("user is not found", HttpStatus.CONFLICT)
-        } catch (e: Exception) {
-            println("Error in update ad request: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        articleService.updateArticleStatus(
+            id,
+            ArticleStatus.valueOf(
+                updateStatusRequest.newStatus ?: throw ValidationException("new status must be provided")
+            ),
+            updateStatusRequest.initiatorId ?: throw ValidationException("initiator ID must be provided"),
+        )
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     @PutMapping("/{id}/ads")
@@ -195,17 +142,8 @@ class ArticleController(
         @PathVariable id: Long,
         @RequestBody articleAdPostsIds: List<Long>,
     ): ResponseEntity<*> {
-        return try {
-            articleService.updateArticleAds(id, articleAdPostsIds)
-            ResponseEntity(null, HttpStatus.OK)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in update ad request: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        articleService.updateArticleAds(id, articleAdPostsIds)
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     data class UpdateStatusRequest(

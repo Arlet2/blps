@@ -11,8 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdRequest
-import su.arlet.business1.exceptions.EntityNotFoundException
-import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.AdRequestService
 
 @RestController
@@ -33,13 +31,8 @@ class AdRequestController(
         @RequestParam(name = "ownerId", required = false) ownerId: Long?,
         @RequestParam(name = "status", required = false) status: String?,
     ): ResponseEntity<*> {
-        return try {
-            val adRequests = adRequestService.getAdRequests(ownerId, status)
-            ResponseEntity(adRequests, HttpStatus.OK)
-        } catch (e: Exception) {
-            println("Error in get ad requests: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        val adRequests = adRequestService.getAdRequests(ownerId, status)
+        return ResponseEntity(adRequests, HttpStatus.OK)
     }
 
     @GetMapping("/{id}")
@@ -52,15 +45,8 @@ class AdRequestController(
     @ApiResponse(responseCode = "404", description = "Not found - ad request not found", content = [])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getAdRequestById(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            val adRequest = adRequestService.getAdRequest(adRequestId = id)
-            ResponseEntity(adRequest, HttpStatus.OK)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: Exception) {
-            println("Error in get ad request by id: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        val adRequest = adRequestService.getAdRequest(adRequestId = id)
+        return ResponseEntity(adRequest, HttpStatus.OK)
     }
 
     @PostMapping("/")
@@ -80,18 +66,9 @@ class AdRequestController(
     fun createAdRequest(
         @RequestBody createAdRequest: AdRequestService.CreateAdRequest,
     ): ResponseEntity<*> {
-        return try {
-            createAdRequest.validate()
-            val adRequestId = adRequestService.createAdRequest(createAdRequest)
-            ResponseEntity(adRequestId, HttpStatus.CREATED)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in create ad request: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        createAdRequest.validate()
+        val adRequestId = adRequestService.createAdRequest(createAdRequest)
+        return ResponseEntity(adRequestId, HttpStatus.CREATED)
     }
 
     @PatchMapping("/{id}")
@@ -108,18 +85,9 @@ class AdRequestController(
         @PathVariable id: Long,
         @RequestBody updateAdRequest: AdRequestService.UpdateAdRequest,
     ): ResponseEntity<*> {
-        return try {
-            updateAdRequest.validate()
-            adRequestService.updateAdRequest(adRequestId = id, updateAdRequest = updateAdRequest)
-            ResponseEntity.ok(null)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in update ad request: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        updateAdRequest.validate()
+        adRequestService.updateAdRequest(adRequestId = id, updateAdRequest = updateAdRequest)
+        return ResponseEntity.ok(null)
     }
 
     @PutMapping("/{id}/status")
@@ -132,22 +100,9 @@ class AdRequestController(
         @PathVariable id: Long,
         @RequestBody newStatus: AdRequestService.UpdateAdRequestStatus,
     ): ResponseEntity<*> {
-        return try {
-            newStatus.validate()
-            adRequestService.updateAdRequestStatus(adRequestId = id, updateStatus = newStatus)
-            ResponseEntity(null, HttpStatus.OK)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (_: UnsupportedOperationException) {
-            ResponseEntity("Unsupported status change", HttpStatus.CONFLICT)
-        } catch (_: IllegalArgumentException) {
-            ResponseEntity("Unknown status", HttpStatus.BAD_REQUEST)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in update ad request: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        newStatus.validate()
+        adRequestService.updateAdRequestStatus(adRequestId = id, updateStatus = newStatus)
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     @DeleteMapping("/{id}")
@@ -156,14 +111,7 @@ class AdRequestController(
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteAdRequest(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            adRequestService.deleteAdRequest(adRequestId = id)
-            ResponseEntity.ok(null)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity(null, HttpStatus.NO_CONTENT)
-        } catch (e: Exception) {
-            println("Error in get ad requests: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        adRequestService.deleteAdRequest(adRequestId = id)
+        return ResponseEntity.ok(null)
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.exceptions.EntityNotFoundException
-import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.services.UserService
 
 
@@ -39,24 +37,17 @@ class UserController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun getUserById(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            val user = userService.getUser(userId = id)
+        val user = userService.getUser(userId = id)
 
-            ResponseEntity(
-                UserEntity(
-                    id = user.id,
-                    name = user.name,
-                    login = user.login,
-                    role = user.role,
-                ),
-                HttpStatus.OK,
-            )
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: Exception) {
-            println("Error in get user by id: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        return ResponseEntity(
+            UserEntity(
+                id = user.id,
+                name = user.name,
+                login = user.login,
+                role = user.role,
+            ),
+            HttpStatus.OK,
+        )
     }
 
     @PostMapping("/")
@@ -76,22 +67,9 @@ class UserController(
     fun createUser(
         @RequestBody createUserRequest: UserService.CreateUserRequest,
     ): ResponseEntity<*> {
-
-        try {
-            createUserRequest.validate()
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        }
-
-        return try {
-            val adRequestId = userService.createUser(createUserRequest)
-            ResponseEntity(adRequestId, HttpStatus.CREATED)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: Exception) {
-            println("Error in add user: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        createUserRequest.validate()
+        val adRequestId = userService.createUser(createUserRequest)
+        return ResponseEntity(adRequestId, HttpStatus.CREATED)
     }
 
     @PatchMapping("/{id}")
@@ -108,19 +86,9 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody updateUserRequest: UserService.UpdateUserRequest,
     ): ResponseEntity<*> {
-
-        return try {
-            updateUserRequest.validate()
-            userService.updateUser(userId = id, updateUserRequest = updateUserRequest)
-            ResponseEntity.ok(null)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity("Not found", HttpStatus.NOT_FOUND)
-        } catch (e: ValidationException) {
-            return ResponseEntity("Bad body: ${e.message}", HttpStatus.BAD_REQUEST)
-        } catch (e: Exception) {
-            println("Error in update user: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        updateUserRequest.validate()
+        userService.updateUser(userId = id, updateUserRequest = updateUserRequest)
+        return ResponseEntity.ok(null)
     }
 
     @DeleteMapping("/{id}")
@@ -129,14 +97,7 @@ class UserController(
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun deleteUser(@PathVariable id: Long): ResponseEntity<*> {
-        return try {
-            userService.deleteUser(userId = id)
-            ResponseEntity.ok(null)
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity(null, HttpStatus.NO_CONTENT)
-        } catch (e: Exception) {
-            println("Error in delete user: ${e.message}")
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        userService.deleteUser(userId = id)
+        return ResponseEntity.ok(null)
     }
 }

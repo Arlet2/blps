@@ -6,11 +6,11 @@ import su.arlet.business1.core.AdRequest
 import su.arlet.business1.core.Auditory
 import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
@@ -86,43 +86,47 @@ class AdRequestService @Autowired constructor(
         updateAdRequest.clarificationText?.let { adRequest.clarificationText = it }
     }
 
-    @Throws(EntityNotFoundException::class, IllegalArgumentException::class, UnsupportedOperationException::class)
+    @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
     fun updateAdRequestStatus(adRequestId: Long, updateStatus: UpdateAdRequestStatus) {
         val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
             throw EntityNotFoundException()
         }
-        val newStatus = AdRequestStatus.valueOf(updateStatus.status)
+        val newStatus = try {
+            AdRequestStatus.valueOf(updateStatus.status)
+        } catch (e: IllegalArgumentException) {
+            throw ValidationException("unknown status")
+        }
 
         if (adRequest.status == newStatus) return
 
         when (newStatus) {
             AdRequestStatus.SAVED ->
                 if (adRequest.status != AdRequestStatus.NEEDS_CLARIFICATION)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.READY_TO_CHECK ->
                 if (adRequest.status != AdRequestStatus.SAVED)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.NEEDS_CLARIFICATION ->
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.MODERATION ->
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.READY_TO_PUBLISH ->
                 if (adRequest.status != AdRequestStatus.MODERATION)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.PUBLISHED ->
                 if (adRequest.status != AdRequestStatus.READY_TO_PUBLISH)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
             AdRequestStatus.CANCELED ->
                 if (adRequest.status == AdRequestStatus.PUBLISHED)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
         }
 
         adRequest.status = newStatus
