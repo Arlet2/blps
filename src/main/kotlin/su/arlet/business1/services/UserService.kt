@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
+import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UserAlreadyExistsException
@@ -15,16 +16,22 @@ import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.UserRepo
 import su.arlet.business1.security.jwt.JwtUtils
+import su.arlet.business1.security.services.AuthUserService
+import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 
 @Service
 class UserService @Autowired constructor(
     private val userRepo: UserRepo,
+    private val authUserService: AuthUserService,
     private val encoder: PasswordEncoder,
     private val jwtUtils: JwtUtils,
     private val authenticationManager: AuthenticationManager
 ) {
+    private val minUsernameLength = 4
+    private val minPasswordLength = 4
+
     data class AuthorizedUserCredentials(
         val username: String,
         val token: String
@@ -48,9 +55,12 @@ class UserService @Autowired constructor(
 
     @Throws(UserAlreadyExistsException::class, ValidationException::class)
     fun register(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
-        if (authUserRequest.username == null || userRepo.findByUsername(authUserRequest.username).isPresent)
+        if (authUserRequest.username!!.length < minUsernameLength)
+            throw ValidationException("username is too short")
+        if (authUserRequest.password!!.length < minPasswordLength)
+            throw ValidationException("password is too short")
+        if (userRepo.findByUsername(authUserRequest.username).isPresent)
             throw UserAlreadyExistsException()
-        // TODO validate username and password len
 
         val user = User(
             name = authUserRequest.name,
@@ -64,10 +74,12 @@ class UserService @Autowired constructor(
         return login(authUserRequest)
     }
 
-    @Throws(EntityNotFoundException::class)
-    fun updateUser(userId: Long, updateUserRequest: UpdateUserRequest) {
+    @Throws(UserNotFoundException::class)
+    fun updateUser(updateUserRequest: UpdateUserRequest) {
+        val userId = authUserService.getUserId()
+
         val user = userRepo.findById(userId).getOrElse {
-            throw EntityNotFoundException()
+            throw UserNotFoundException()
         }
 
         updateUserFields(user, updateUserRequest)
@@ -80,18 +92,43 @@ class UserService @Autowired constructor(
         updateUserRequest.password?.let { user.passwordHash = hashPassword(it) }
     }
 
-    @Throws(EntityNotFoundException::class)
-    fun deleteUser(userId: Long) {
+    @Throws(UserNotFoundException::class)
+    fun updateUserRole(updateUserRoleRequest: UpdateUserRoleRequest) {
+        var userSearchResult =
+            if (updateUserRoleRequest.userId != null)
+                userRepo.findById(updateUserRoleRequest.userId)
+            else Optional.empty()
+
+        if (userSearchResult.isEmpty)
+            userSearchResult = if (updateUserRoleRequest.username != null)
+                userRepo.findByUsername(updateUserRoleRequest.username)
+            else Optional.empty()
+
+        val user = userSearchResult.getOrElse { throw UserNotFoundException() }
+
+        if (user.role != UserRole.ADMIN)
+            user.role = UserRole.valueOf(updateUserRoleRequest.newRole!!)
+        else throw ValidationException("you can't change admins role")
+
+        userRepo.save(user)
+    }
+
+    @Throws(UserNotFoundException::class)
+    fun deleteUser() {
+        val userId = authUserService.getUserId()
+
         if (userRepo.findById(userId).isPresent)
             userRepo.deleteById(userId)
         else
-            throw EntityNotFoundException()
+            throw UserNotFoundException()
     }
 
-    @Throws(EntityNotFoundException::class)
-    fun getUser(userId: Long): User {
+    @Throws(UserNotFoundException::class)
+    fun getUser(): User {
+        val userId = authUserService.getUserId()
+
         return userRepo.findById(userId).getOrElse {
-            throw EntityNotFoundException()
+            throw UserNotFoundException()
         }
     }
 
@@ -132,6 +169,30 @@ class UserService @Autowired constructor(
         fun validate() {
             if (password != null && password == "")
                 throw ValidationException("password must be not empty")
+        }
+    }
+
+    data class UpdateUserRoleRequest(
+        val userId: Long?,
+        val username: String?,
+        val newRole: String?
+    ) {
+        @Throws(ValidationException::class)
+        fun validate() {
+            if (userId == null && username == null)
+                throw ValidationException("userId or username must be provided")
+            if (userId != null && userId < 0)
+                throw ValidationException("userId  must be positive")
+            if (!username.isNullOrEmpty())
+                throw ValidationException("username can't be empty")
+            if (newRole.isNullOrEmpty())
+                throw ValidationException("new role can't be empty")
+
+            try {
+                UserRole.valueOf(newRole)
+            } catch (e: IllegalArgumentException) {
+                throw ValidationException("unknown role type: $newRole")
+            }
         }
     }
 }

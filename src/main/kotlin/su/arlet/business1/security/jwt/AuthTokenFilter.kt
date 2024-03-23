@@ -42,7 +42,7 @@ class AuthTokenFilter: OncePerRequestFilter() {
         filterChain.doFilter(request, response)
     }
 
-    fun getUserDetails(request: HttpServletRequest): AuthUsersDetails? {
+    private fun getUserDetails(request: HttpServletRequest): AuthUsersDetails? {
         val jwt = parseJwt(request)
 
         if (jwt == null || !jwtUtils.verifyToken(jwt)) return null

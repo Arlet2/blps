@@ -50,4 +50,10 @@ class ErrorHandler {
     fun handleUnauthorizedError(e: UnauthorizedError): String {
         return "unauthorized"
     }
+
+    @ExceptionHandler(PermissionDeniedException::class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    fun handlePermissionDeniedException(e: PermissionDeniedException): String {
+        return "you don't have access to this ${e.message}"
+    }
 }

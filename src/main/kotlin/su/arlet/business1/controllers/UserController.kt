@@ -6,13 +6,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.UserService
 
 
@@ -21,7 +20,6 @@ import su.arlet.business1.services.UserService
 @Tag(name = "Users API")
 class UserController(
     val userService: UserService,
-    val authUserService: AuthUserService
 ) {
     data class UserEntity(
         val id: Long,
@@ -39,9 +37,8 @@ class UserController(
     )
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun getUserById(request: HttpServletRequest): ResponseEntity<*> {
-        val userId = authUserService.getUserId(request)
-        val user = userService.getUser(userId = userId)
+    fun getUserById(): ResponseEntity<*> {
+        val user = userService.getUser()
 
         return ResponseEntity(
             UserEntity(
@@ -66,12 +63,31 @@ class UserController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUser(
         @RequestBody updateUserRequest: UserService.UpdateUserRequest,
-        request: HttpServletRequest
     ): ResponseEntity<*> {
         updateUserRequest.validate()
 
-        val userId = authUserService.getUserId(request)
-        userService.updateUser(userId = userId, updateUserRequest = updateUserRequest)
+        userService.updateUser(updateUserRequest = updateUserRequest)
+
+        return ResponseEntity.ok(null)
+    }
+
+    @PutMapping("/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update user role (only for admins)")
+    @ApiResponse(responseCode = "200", description = "Success - updated user role", content = [Content()])
+    @ApiResponse(
+        responseCode = "400", description = "Bad body", content = [
+            Content(schema = Schema(implementation = String::class)),
+        ]
+    )
+    @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
+    @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
+    fun updateUserRole(
+        @RequestBody updateUserRoleRequest: UserService.UpdateUserRoleRequest
+    ): ResponseEntity<*> {
+        updateUserRoleRequest.validate()
+
+        userService.updateUserRole(updateUserRoleRequest)
 
         return ResponseEntity.ok(null)
     }
@@ -81,10 +97,8 @@ class UserController(
     @ApiResponse(responseCode = "200", description = "Success - deleted user", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
-    fun deleteUser(request: HttpServletRequest): ResponseEntity<*> {
-        val userId = authUserService.getUserId(request)
-
-        userService.deleteUser(userId = userId)
+    fun deleteUser(): ResponseEntity<*> {
+        userService.deleteUser()
 
         return ResponseEntity.ok(null)
     }

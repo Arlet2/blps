@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,15 +13,13 @@ import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.ArticleService
 
 @RestController
 @RequestMapping("\${api.path}/articles")
 @Tag(name = "Article API")
 class ArticleController(
-    val articleService: ArticleService,
-    val authUserService: AuthUserService
+    val articleService: ArticleService
 ) {
 
     @GetMapping("/")
@@ -71,12 +68,10 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createArticle(
         @RequestBody createArticleRequest: ArticleService.CreateArticleRequest,
-        request: HttpServletRequest
     ): ResponseEntity<*> {
         createArticleRequest.validate()
 
-        val userId = authUserService.getUserId(request)
-        val articleId = articleService.addArticle(userId, createArticleRequest)
+        val articleId = articleService.addArticle(createArticleRequest)
 
         return ResponseEntity(articleId, HttpStatus.CREATED)
     }
@@ -97,7 +92,9 @@ class ArticleController(
         @RequestBody updatedArticle: ArticleService.UpdateArticleRequest,
     ): ResponseEntity<*> {
         updatedArticle.validate()
+
         articleService.updateArticle(id, updatedArticle)
+
         return ResponseEntity(null, HttpStatus.OK)
     }
 
@@ -126,15 +123,11 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateArticleStatus(
         @PathVariable id: Long,
-        @RequestBody updateStatusRequest: UpdateStatusRequest,
-        request: HttpServletRequest
+        @RequestBody updateStatusRequest: UpdateStatusRequest
     ): ResponseEntity<*> {
         updateStatusRequest.validate()
 
-        val userId = authUserService.getUserId(request)
-        articleService.updateArticleStatus(
-            id, userId, ArticleStatus.valueOf(updateStatusRequest.newStatus!!)
-        )
+        articleService.updateArticleStatus(id, ArticleStatus.valueOf(updateStatusRequest.newStatus!!))
         return ResponseEntity(null, HttpStatus.OK)
     }
 

@@ -14,7 +14,7 @@ class AuthUsersDetails(
     private val authorities: Collection<GrantedAuthority?>
 ) : UserDetails {
     companion object {
-        private const val ROLE_PREFIX = "ROLE_"
+        const val ROLE_PREFIX = "ROLE_"
 
         fun build(user: User): AuthUsersDetails {
             return AuthUsersDetails(
