@@ -1,6 +1,5 @@
 package su.arlet.business1.security.services
 
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.enums.UserRole
@@ -13,7 +12,7 @@ class AuthUserService(
     fun hasRole(role: UserRole): Boolean {
         return getUserDetails().authorities.any {
             it?.authority == AuthUsersDetails.ROLE_PREFIX + role.name ||
-            it?.authority == AuthUsersDetails.ROLE_PREFIX + UserRole.ADMIN
+                    it?.authority == AuthUsersDetails.ROLE_PREFIX + UserRole.ADMIN
         }
     }
 

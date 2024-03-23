@@ -87,7 +87,7 @@ class UserController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUserRole(
-        @RequestBody updateUserRoleRequest: UserService.UpdateUserRoleRequest
+        @RequestBody updateUserRoleRequest: UserService.UpdateUserRoleRequest,
     ): ResponseEntity<*> {
         updateUserRoleRequest.validate()
 

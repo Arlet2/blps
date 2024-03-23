@@ -8,9 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
-import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UserAlreadyExistsException
 import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
@@ -175,7 +173,7 @@ class UserService @Autowired constructor(
     data class UpdateUserRoleRequest(
         val userId: Long?,
         val username: String?,
-        val newRole: String?
+        val newRole: String?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
