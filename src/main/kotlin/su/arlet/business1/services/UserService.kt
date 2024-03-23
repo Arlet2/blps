@@ -29,6 +29,9 @@ class UserService @Autowired constructor(
     private val jwtUtils: JwtUtils,
     private val authenticationManager: AuthenticationManager
 ) {
+    private val minUsernameLength = 4
+    private val minPasswordLength = 4
+
     data class AuthorizedUserCredentials(
         val username: String,
         val token: String
@@ -52,9 +55,12 @@ class UserService @Autowired constructor(
 
     @Throws(UserAlreadyExistsException::class, ValidationException::class)
     fun register(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
-        if (authUserRequest.username == null || userRepo.findByUsername(authUserRequest.username).isPresent)
+        if (authUserRequest.username!!.length < minUsernameLength)
+            throw ValidationException("username is too short")
+        if (authUserRequest.password!!.length < minPasswordLength)
+            throw ValidationException("password is too short")
+        if (userRepo.findByUsername(authUserRequest.username).isPresent)
             throw UserAlreadyExistsException()
-        // TODO validate username and password len
 
         val user = User(
             name = authUserRequest.name,
