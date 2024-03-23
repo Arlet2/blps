@@ -4,6 +4,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
+import su.arlet.business1.core.enums.AdPostStatus
+import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.*
@@ -20,6 +22,7 @@ class ArticleService(
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
     private val articleMetricsRepo: ArticleMetricsRepo,
+    private val adRequestRepo: AdRequestRepo,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
@@ -150,6 +153,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
+    @Transactional
     @Throws(EntityNotFoundException::class, UnsupportedStatusChangeException::class, UserNotFoundException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
@@ -168,6 +172,8 @@ class ArticleService(
             ArticleStatus.PUBLISHED -> {
                 if (article.status != ArticleStatus.APPROVED)
                     throw UnsupportedStatusChangeException()
+                changeStatusesToPublished(article)
+                return
             }
 
             ArticleStatus.APPROVED -> {
@@ -183,6 +189,19 @@ class ArticleService(
 
         article.status = newStatus
 
+        articleRepo.save(article)
+    }
+
+    @Transactional
+    fun changeStatusesToPublished(article: Article) {
+        article.status = ArticleStatus.PUBLISHED
+        article.adPosts.forEach {
+            it.status = AdPostStatus.PUBLISHED
+            adPostRepo.save(it)
+
+            it.adRequest.status = AdRequestStatus.PUBLISHED
+            adRequestRepo.save(it.adRequest)
+        }
         articleRepo.save(article)
     }
 
