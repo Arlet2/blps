@@ -34,7 +34,7 @@ class ArticleService(
             Article(
                 title = createArticleRequest.title ?: throw ValidationException("title must be provided"),
                 text = createArticleRequest.text ?: throw ValidationException("text must be provided"),
-                images = getImagesById(createArticleRequest.imageIds),
+                images = getImagesById(createArticleRequest.imageIds?: listOf()),
                 status = ArticleStatus.ON_REVIEW,
                 author = author,
             )
@@ -208,7 +208,7 @@ class ArticleService(
     data class CreateArticleRequest(
         val title: String?,
         val text: String?,
-        val imageIds: List<Long>,
+        val imageIds: List<Long>?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
