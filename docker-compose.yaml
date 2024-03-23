@@ -1,9 +1,10 @@
 version: "3"
 services:
   main-app:
-    image: arlet2/business-1:v0.0.1
+    build:
+      dockerfile: Dockerfile
     ports:
-      - "9000:8080"
+      - "8080:8080"
     env_file:
       - .env
     depends_on:

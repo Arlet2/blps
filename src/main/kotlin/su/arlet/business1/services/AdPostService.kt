@@ -1,5 +1,6 @@
 package su.arlet.business1.services
 
+import jakarta.transaction.Transactional
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -8,10 +9,7 @@ import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.repos.AdPostRepo
-import su.arlet.business1.repos.AdRequestRepo
-import su.arlet.business1.repos.ImageRepo
-import su.arlet.business1.repos.UserRepo
+import su.arlet.business1.repos.*
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -21,6 +19,7 @@ class AdPostService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
+    private val adMetricsRepo: AdMetricsRepo,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdPost(createAdPost: CreateAdPost): Long {
@@ -119,10 +118,15 @@ class AdPostService @Autowired constructor(
     }
 
     @Throws(EntityNotFoundException::class)
+    @Transactional
     fun getAdPost(adPostId: Long): AdPost {
-        return adPostRepo.findById(adPostId).getOrElse {
+        val ad = adPostRepo.findById(adPostId).getOrElse {
             throw EntityNotFoundException()
         }
+
+        incViewMetrics(ad)
+
+        return ad
     }
 
     fun getAdPosts(status: String?): List<AdPost> {
@@ -135,6 +139,15 @@ class AdPostService @Autowired constructor(
             }
 
         return adPostRepo.findAll()
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    fun incViewMetrics(adPost: AdPost) {
+        val metrics = adPost.metrics ?: AdMetrics()
+        metrics.viewCounter++
+
+        adPost.metrics = adMetricsRepo.save(metrics)
+        adPostRepo.save(adPost)
     }
 
     data class CreateAdPost(

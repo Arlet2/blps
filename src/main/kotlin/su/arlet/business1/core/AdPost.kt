@@ -25,4 +25,7 @@ class AdPost(
 
     @Enumerated(EnumType.STRING)
     var status: AdPostStatus,
+
+    @OneToOne
+    var metrics: AdMetrics? = null,
 )
