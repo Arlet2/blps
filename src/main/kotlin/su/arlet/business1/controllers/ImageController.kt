@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Image
 import su.arlet.business1.services.ImageService
@@ -49,6 +50,7 @@ class ImageController(
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('JOURNALIST') || hasRole('SALES')")
     @Operation(summary = "Create a new image")
     @ApiResponse(
         responseCode = "201", description = "Created image", content = [
@@ -70,6 +72,7 @@ class ImageController(
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('JOURNALIST') || hasRole('SALES')")
     @Operation(summary = "Update image")
     @ApiResponse(responseCode = "200", description = "Success - updated image", content = [Content()])
     @ApiResponse(
@@ -89,6 +92,7 @@ class ImageController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('JOURNALIST') || hasRole('SALES')")
     @Operation(summary = "Delete image")
     @ApiResponse(responseCode = "200", description = "Success - deleted image", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])

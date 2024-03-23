@@ -24,8 +24,8 @@ class ArticleService(
     private val userRepo: UserRepo,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
-    fun addArticle(createArticleRequest: CreateArticleRequest): Long {
-        val author = userRepo.findById(createArticleRequest.authorId).getOrNull() ?: throw UserNotFoundException()
+    fun addArticle(userId: Long, createArticleRequest: CreateArticleRequest): Long {
+        val author = userRepo.findById(userId).getOrNull() ?: throw UserNotFoundException()
 
         val articleId = articleRepo.save(
             Article(
@@ -98,7 +98,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
-    fun updateArticleStatus(id: Long, newStatus: ArticleStatus, initiatorId: Long) {
+    fun updateArticleStatus(id: Long, initiatorId: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         when (newStatus) {
@@ -157,7 +157,6 @@ class ArticleService(
         val title: String?,
         val text: String?,
         val imageIds: List<Long>,
-        val authorId: Long,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
@@ -197,8 +196,16 @@ class ArticleService(
     }
 
     private fun updateArticleFields(article: Article, updateArticleRequest: UpdateArticleRequest) {
-        updateArticleRequest.text?.let { article.text = it }
-        updateArticleRequest.title?.let { article.title = it }
+        updateArticleRequest.text?.let {
+            article.text = it
+            if (article.status == ArticleStatus.NEED_FIXES)
+                article.status = ArticleStatus.ON_REVIEW
+        }
+        updateArticleRequest.title?.let {
+            article.title = it
+            if (article.status == ArticleStatus.NEED_FIXES)
+                article.status = ArticleStatus.ON_REVIEW
+        }
         updateArticleRequest.imageIds?.let {
             val newImages = mutableListOf<Image>()
 

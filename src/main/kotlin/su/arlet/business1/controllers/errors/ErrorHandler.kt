@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import su.arlet.business1.exceptions.EntityNotFoundException
-import su.arlet.business1.exceptions.UnsupportedStatusChangeException
-import su.arlet.business1.exceptions.UserNotFoundException
-import su.arlet.business1.exceptions.ValidationException
+import su.arlet.business1.exceptions.*
 
 @RestControllerAdvice
 class ErrorHandler {
@@ -40,5 +37,17 @@ class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     fun handleUnsupportedStatusChangeException(e: UnsupportedStatusChangeException): String {
         return "unsupported status change"
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    fun handleUserAlreadyExistsException(e: UserAlreadyExistsException): String {
+        return "this username has been already taken"
+    }
+
+    @ExceptionHandler(UnauthorizedError::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleUnauthorizedError(e: UnauthorizedError): String {
+        return "unauthorized"
     }
 }

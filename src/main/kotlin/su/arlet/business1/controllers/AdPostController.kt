@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdPost
 import su.arlet.business1.services.AdPostService
@@ -49,6 +50,7 @@ class AdPostController(
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('SALES')")
     @Operation(summary = "Create a new ad post")
     @ApiResponse(
         responseCode = "201", description = "Created ad post id", content = [
@@ -71,6 +73,7 @@ class AdPostController(
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('SALES')")
     @Operation(summary = "Update ad post info")
     @ApiResponse(responseCode = "200", description = "Success - updated ad post", content = [Content()])
     @ApiResponse(
@@ -105,6 +108,7 @@ class AdPostController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SALES')")
     @Operation(summary = "Delete ad post")
     @ApiResponse(responseCode = "200", description = "Success - deleted ad post", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
