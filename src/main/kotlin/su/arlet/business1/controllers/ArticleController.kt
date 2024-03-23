@@ -6,12 +6,15 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.exceptions.ValidationException
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.ArticleService
 
 @RestController
@@ -19,6 +22,7 @@ import su.arlet.business1.services.ArticleService
 @Tag(name = "Article API")
 class ArticleController(
     val articleService: ArticleService,
+    val authUserService: AuthUserService
 ) {
 
     @GetMapping("/")
@@ -52,6 +56,7 @@ class ArticleController(
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('JOURNALIST')")
     @Operation(summary = "Create a new article")
     @ApiResponse(
         responseCode = "201", description = "Created article id", content = [
@@ -66,13 +71,18 @@ class ArticleController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun createArticle(
         @RequestBody createArticleRequest: ArticleService.CreateArticleRequest,
+        request: HttpServletRequest
     ): ResponseEntity<*> {
         createArticleRequest.validate()
-        val articleId = articleService.addArticle(createArticleRequest)
+
+        val userId = authUserService.getUserId(request)
+        val articleId = articleService.addArticle(userId, createArticleRequest)
+
         return ResponseEntity(articleId, HttpStatus.CREATED)
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('JOURNALIST')")
     @Operation(summary = "Update article info")
     @ApiResponse(responseCode = "200", description = "Success - updated article", content = [Content()])
     @ApiResponse(
@@ -92,6 +102,7 @@ class ArticleController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EDITOR')")
     @Operation(summary = "Delete article")
     @ApiResponse(responseCode = "200", description = "Success - deleted article", content = [Content()])
     @ApiResponse(responseCode = "204", description = "No content", content = [Content()])
@@ -102,6 +113,7 @@ class ArticleController(
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('EDITOR')")
     @Operation(summary = "Update article status")
     @ApiResponse(responseCode = "200", description = "Updated article", content = [Content()])
     @ApiResponse(
@@ -115,20 +127,19 @@ class ArticleController(
     fun updateArticleStatus(
         @PathVariable id: Long,
         @RequestBody updateStatusRequest: UpdateStatusRequest,
+        request: HttpServletRequest
     ): ResponseEntity<*> {
         updateStatusRequest.validate()
 
+        val userId = authUserService.getUserId(request)
         articleService.updateArticleStatus(
-            id,
-            ArticleStatus.valueOf(
-                updateStatusRequest.newStatus ?: throw ValidationException("new status must be provided")
-            ),
-            updateStatusRequest.initiatorId ?: throw ValidationException("initiator ID must be provided"),
+            id, userId, ArticleStatus.valueOf(updateStatusRequest.newStatus!!)
         )
         return ResponseEntity(null, HttpStatus.OK)
     }
 
     @PutMapping("/{id}/ads")
+    @PreAuthorize("hasRole('EDITOR')")
     @Operation(summary = "Update article ads")
     @ApiResponse(responseCode = "200", description = "Updated article", content = [Content()])
     @ApiResponse(
@@ -148,13 +159,10 @@ class ArticleController(
 
     data class UpdateStatusRequest(
         val newStatus: String?,
-        val initiatorId: Long?,
     ) {
         fun validate() {
             if (newStatus == null)
                 throw ValidationException("new status must be provided")
-            if (initiatorId == null)
-                throw ValidationException("initiator id must be provided")
 
             try {
                 ArticleStatus.valueOf(newStatus)

@@ -1,34 +1,67 @@
 package su.arlet.business1.services
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.UserAlreadyExistsException
+import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.UserRepo
+import su.arlet.business1.security.jwt.JwtUtils
 import kotlin.jvm.optionals.getOrElse
+
 
 @Service
 class UserService @Autowired constructor(
     private val userRepo: UserRepo,
+    private val encoder: PasswordEncoder,
+    private val jwtUtils: JwtUtils,
+    private val authenticationManager: AuthenticationManager
 ) {
-    @Throws(EntityNotFoundException::class, ValidationException::class)
-    fun createUser(createUserRequest: CreateUserRequest): Long {
-        // TODO check login unique
+    data class AuthorizedUserCredentials(
+        val username: String,
+        val token: String
+    )
+
+    @Throws(ValidationException::class)
+    fun login(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
+        val authentication =
+            try{
+                authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken(authUserRequest.username, authUserRequest.password)
+                )
+            } catch (e: AuthenticationException) {
+                throw UserNotFoundException()
+            }
+        SecurityContextHolder.getContext().authentication = authentication
+        val jwtToken = jwtUtils.generateJwtToken(authentication)
+
+        return AuthorizedUserCredentials(authUserRequest.username!!, jwtToken)
+    }
+
+    @Throws(UserAlreadyExistsException::class, ValidationException::class)
+    fun register(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
+        if (authUserRequest.username == null || userRepo.findByUsername(authUserRequest.username).isPresent)
+            throw UserAlreadyExistsException()
+        // TODO validate username and password len
 
         val user = User(
-            name = createUserRequest.name,
-            login = createUserRequest.login ?: throw ValidationException("login must be provided"),
-            passwordHash = hashPassword(
-                createUserRequest.password ?: throw ValidationException("password must be provided")
-            ),
+            name = authUserRequest.name,
+            username = authUserRequest.username,
+            passwordHash = hashPassword(authUserRequest.password),
             role = UserRole.DEFAULT
         )
 
-        val userId = userRepo.save(user).id
+        userRepo.save(user)
 
-        return userId
+        return login(authUserRequest)
     }
 
     @Throws(EntityNotFoundException::class)
@@ -66,22 +99,25 @@ class UserService @Autowired constructor(
         return userRepo.findAll()
     }
 
-    fun hashPassword(password: String): String {
-        return password.reversed()
+    fun hashPassword(password: String?): String {
+        if (password == null)
+            throw ValidationException("password must be provided")
+
+        return encoder.encode(password)
     }
 
-    data class CreateUserRequest(
+    data class AuthUserRequest(
         val name: String?,
-        val login: String?,
+        val username: String?,
         var password: String?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {
-            if (login == null)
+            if (username == null)
                 throw ValidationException("login must be provided")
             if (password == null)
                 throw ValidationException("password must be provided")
-            if (login == "")
+            if (username == "")
                 throw ValidationException("login must be not empty")
             if (password == "")
                 throw ValidationException("password must be not empty")

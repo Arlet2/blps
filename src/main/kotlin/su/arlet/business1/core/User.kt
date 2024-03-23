@@ -11,10 +11,10 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     var name: String?,
-    val login: String,
+    val username: String,
     @JsonIgnore
     var passwordHash: String,
 
     @Enumerated(EnumType.STRING)
-    val role: UserRole,
+    val role: UserRole = UserRole.DEFAULT,
 )
