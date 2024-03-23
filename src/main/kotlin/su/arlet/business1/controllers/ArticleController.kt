@@ -13,9 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.Article
 import su.arlet.business1.core.enums.ArticleStatus
-import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.security.sevices.AuthUserService
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.ArticleService
 
 @RestController

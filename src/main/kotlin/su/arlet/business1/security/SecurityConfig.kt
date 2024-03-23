@@ -23,7 +23,7 @@ import org.springframework.security.web.access.expression.DefaultWebSecurityExpr
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import su.arlet.business1.security.jwt.AuthEntryPoint
 import su.arlet.business1.security.jwt.AuthTokenFilter
-import su.arlet.business1.security.sevices.AuthUsersDetailsService
+import su.arlet.business1.security.services.AuthUsersDetailsService
 
 
 @Configuration

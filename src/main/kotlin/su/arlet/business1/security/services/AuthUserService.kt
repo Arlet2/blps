@@ -1,4 +1,4 @@
-package su.arlet.business1.security.sevices
+package su.arlet.business1.security.services
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Service

@@ -2,13 +2,12 @@ package su.arlet.business1.security.jwt
 
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import su.arlet.business1.exceptions.UnauthorizedError
-import su.arlet.business1.security.sevices.AuthUsersDetails
+import su.arlet.business1.security.services.AuthUsersDetails
 import java.time.Instant
 import java.util.*
 import javax.crypto.SecretKey

@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.security.sevices.AuthUserService
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.UserService
 
 

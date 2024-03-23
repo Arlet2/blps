@@ -21,20 +21,10 @@ class AuthEntryPoint : AuthenticationEntryPoint {
         response: HttpServletResponse,
         authException: AuthenticationException
     ) {
+        logger.error("Unauthorized error: ${authException.message}")
 
-        logger.error("Unauthorized error: {}", authException.message)
-
-        response.contentType = MediaType.APPLICATION_JSON_VALUE
+        response.contentType = MediaType.TEXT_PLAIN_VALUE
         response.status = HttpServletResponse.SC_UNAUTHORIZED
-
-        val body: MutableMap<String, Any?> = HashMap()
-
-        body["status"] = HttpServletResponse.SC_UNAUTHORIZED
-        body["error"] = "Unauthorized"
-        body["message"] = authException.message
-        body["path"] = request.servletPath
-
-        val mapper = ObjectMapper()
-        mapper.writeValue(response.outputStream, body)
+        response.outputStream.println("Unauthorized")
     }
 }

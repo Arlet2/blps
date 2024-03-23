@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdRequest
-import su.arlet.business1.security.sevices.AuthUserService
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.AdRequestService
 
 @RestController

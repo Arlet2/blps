@@ -8,14 +8,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
-import su.arlet.business1.exceptions.UserNotFoundException
-import su.arlet.business1.security.sevices.AuthUsersDetails
-import su.arlet.business1.security.sevices.AuthUsersDetailsService
+import su.arlet.business1.security.services.AuthUsersDetails
+import su.arlet.business1.security.services.AuthUsersDetailsService
 import java.io.IOException
 
 class AuthTokenFilter: OncePerRequestFilter() {
@@ -40,7 +37,7 @@ class AuthTokenFilter: OncePerRequestFilter() {
                 SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: Exception) {
-            Companion.logger.error("Cannot set user authentication: { }", e)
+            logger.error("Cannot set user authentication: ${e.message}")
         }
         filterChain.doFilter(request, response)
     }
@@ -61,9 +58,5 @@ class AuthTokenFilter: OncePerRequestFilter() {
         return if (StringUtils.hasText(headerAuth) && headerAuth.startsWith(bearerPrefix))
             headerAuth.substring(bearerPrefix.length)
         else null
-    }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(AuthTokenFilter::class.java)
     }
 }

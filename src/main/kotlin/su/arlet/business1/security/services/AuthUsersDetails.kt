@@ -1,4 +1,4 @@
-package su.arlet.business1.security.sevices
+package su.arlet.business1.security.services
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.security.core.GrantedAuthority
