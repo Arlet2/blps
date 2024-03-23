@@ -130,8 +130,7 @@ class AdPostService @Autowired constructor(
         if (!authUserService.hasRole(UserRole.SALES) && adPost.status == AdPostStatus.SAVED)
             throw PermissionDeniedException("ad post")
 
-        if (adPost.status == AdPostStatus.PUBLISHED)
-            incViewMetrics(adPost)
+        incViewMetrics(adPost)
 
         return adPost
     }
@@ -159,6 +158,8 @@ class AdPostService @Autowired constructor(
 
     @Transactional
     fun incViewMetrics(adPost: AdPost) {
+        if (adPost.status != AdPostStatus.PUBLISHED)
+            return
         val metrics = adPost.metrics ?: AdMetrics()
         metrics.viewCounter++
 

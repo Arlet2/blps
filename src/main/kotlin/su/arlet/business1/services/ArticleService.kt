@@ -88,8 +88,7 @@ class ArticleService(
             if (article.status != ArticleStatus.PUBLISHED)
                 throw PermissionDeniedException("article")
 
-        if (article.status == ArticleStatus.PUBLISHED)
-            incReadMetrics(article)
+        incReadMetrics(article)
 
         return article
     }
@@ -132,6 +131,9 @@ class ArticleService(
 
     @Transactional
     fun incViewMetrics(article: Article) {
+        if (article.status != ArticleStatus.PUBLISHED)
+            return
+
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.viewCounter++
 
@@ -141,6 +143,9 @@ class ArticleService(
 
     @Transactional
     fun incReadMetrics(article: Article) {
+        if (article.status != ArticleStatus.PUBLISHED)
+            return
+
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.readCounter++
 
