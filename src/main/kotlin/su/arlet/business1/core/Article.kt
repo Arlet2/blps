@@ -28,7 +28,9 @@ class Article(
     var clarificationText: String? = null,
 
     @ManyToOne
+    @JoinColumn(name = "authorId")
     var author: User,
     @ManyToOne
+    @JoinColumn(name = "editorId")
     var editor: User? = null,
 )

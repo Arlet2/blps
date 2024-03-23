@@ -5,13 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
+import su.arlet.business1.core.enums.ArticleStatus
+import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.ImageRepo
 import su.arlet.business1.repos.UserRepo
+import su.arlet.business1.security.services.AuthUserService
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -21,6 +25,7 @@ class AdPostService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
+    private val authUserService: AuthUserService,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdPost(createAdPost: CreateAdPost): Long {
@@ -30,9 +35,9 @@ class AdPostService @Autowired constructor(
         val image = createAdPost.imageId?.let {
             imageRepo.findById(it).getOrElse { throw EntityNotFoundException("Image") }
         }
-        val salesEditor = createAdPost.salesEditorId?.let {
-            userRepo.findById(it).getOrElse { throw EntityNotFoundException("Sales Editor") }
-        }
+
+        val salesEditorId = authUserService.getUserId()
+        val salesEditor = userRepo.findById(salesEditorId).getOrElse { throw EntityNotFoundException("Sales Editor") }
 
         val adPost = AdPost(
             title = createAdPost.title ?: throw ValidationException("title must be provided"),
@@ -64,11 +69,6 @@ class AdPostService @Autowired constructor(
         updateAdPost.title?.let { adPost.title = it }
         updateAdPost.body?.let { adPost.body = it }
         updateAdPost.targetLink?.let { adPost.targetLink = it }
-        updateAdPost.salesEditorId?.let {
-            adPost.salesEditor = userRepo.findById(it).getOrElse {
-                throw EntityNotFoundException("Sales Editor")
-            }
-        }
         updateAdPost.imageId?.let {
             adPost.image = imageRepo.findById(it).getOrElse {
                 throw EntityNotFoundException("Image")
@@ -90,14 +90,17 @@ class AdPostService @Autowired constructor(
 
         if (adPost.status == newStatus) return
 
+        val isSales = authUserService.hasRole(UserRole.SALES)
+
         when (newStatus) {
             AdPostStatus.SAVED ->
                 throw UnsupportedStatusChangeException()
 
-            AdPostStatus.READY_TO_PUBLISH ->
+            AdPostStatus.READY_TO_PUBLISH -> {
                 if (adPost.status != AdPostStatus.SAVED)
                     throw UnsupportedStatusChangeException()
-
+                if (!isSales) throw PermissionDeniedException("ad post status")
+            }
             AdPostStatus.PUBLISHED ->
                 if (adPost.status != AdPostStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
@@ -120,28 +123,41 @@ class AdPostService @Autowired constructor(
 
     @Throws(EntityNotFoundException::class)
     fun getAdPost(adPostId: Long): AdPost {
-        return adPostRepo.findById(adPostId).getOrElse {
+        val adPost = adPostRepo.findById(adPostId).getOrElse {
             throw EntityNotFoundException()
         }
+
+        if (!authUserService.hasRole(UserRole.SALES) && adPost.status == AdPostStatus.SAVED)
+            throw PermissionDeniedException("ad post")
+
+        return adPost
     }
 
     fun getAdPosts(status: String?): List<AdPost> {
-        if (status != null)
-            try {
-                val adPostStatus = AdPostStatus.valueOf(status.uppercase(Locale.getDefault()))
+        val isSales = authUserService.hasRole(UserRole.SALES)
 
-                return adPostRepo.findAllByStatus(adPostStatus)
-            } catch (_: IllegalArgumentException) {
-            }
+        if (status == null && !isSales)
+            throw ValidationException("status must be provided")
+        if (status == null)
+            return adPostRepo.findAll()
 
-        return adPostRepo.findAll()
+        return try {
+            val adPostStatus = AdPostStatus.valueOf(status.uppercase(Locale.getDefault()))
+
+            if (isSales || adPostStatus != AdPostStatus.SAVED)
+                adPostRepo.findAllByStatus(adPostStatus)
+            else
+                throw PermissionDeniedException("saved ad posts")
+        } catch (_: IllegalArgumentException) {
+            if (isSales) adPostRepo.findAll()
+            else throw ValidationException("status incorrect")
+        }
     }
 
     data class CreateAdPost(
         @NotBlank var title: String?,
         @NotBlank var body: String?,
         @NotBlank var targetLink: String?,
-        var salesEditorId: Long?,
         var imageId: Long?,
         val adRequestId: Long,
     ) {
@@ -166,7 +182,6 @@ class AdPostService @Autowired constructor(
         var title: String?,
         var body: String?,
         var targetLink: String?,
-        var salesEditorId: Long?,
         var imageId: Long?,
     ) {
         @Throws(ValidationException::class)

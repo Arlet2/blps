@@ -7,13 +7,18 @@ import su.arlet.business1.core.Article
 import su.arlet.business1.core.Image
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.ArticleStatus
+import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.ArticleRepo
 import su.arlet.business1.repos.ImageRepo
 import su.arlet.business1.repos.UserRepo
+import su.arlet.business1.security.services.AuthUserService
+import su.arlet.business1.security.services.AuthUsersDetails
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -22,9 +27,12 @@ class ArticleService(
     private val adPostRepo: AdPostRepo,
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
+    private val authUserService: AuthUserService,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
-    fun addArticle(userId: Long, createArticleRequest: CreateArticleRequest): Long {
+    fun addArticle(createArticleRequest: CreateArticleRequest): Long {
+        val userId = authUserService.getUserId()
+
         val author = userRepo.findById(userId).getOrNull() ?: throw UserNotFoundException()
 
         val articleId = articleRepo.save(
@@ -60,29 +68,50 @@ class ArticleService(
     fun updateArticle(id: Long, updateArticleRequest: UpdateArticleRequest) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
+        if (!authUserService.hasRole(UserRole.EDITOR) && article.author.id != authUserService.getUserId())
+            throw PermissionDeniedException("article")
+
         updateArticleFields(article, updateArticleRequest)
     }
 
     @Throws(EntityNotFoundException::class)
     fun deleteArticle(id: Long) {
-        if (articleRepo.findById(id).isPresent)
-            articleRepo.deleteById(id)
-        else
-            throw EntityNotFoundException()
+        val article = articleRepo.findById(id).getOrElse { throw EntityNotFoundException() }
+
+        if (!authUserService.hasRole(UserRole.EDITOR) && article.author.id != authUserService.getUserId())
+            throw PermissionDeniedException("article")
+
+        articleRepo.deleteById(id)
     }
 
     @Throws(EntityNotFoundException::class)
     fun getArticle(id: Long): Article {
-        return articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
+        val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
+
+        if (!authUserService.hasRole(UserRole.EDITOR) && article.author.id != authUserService.getUserId())
+            if (article.status != ArticleStatus.PUBLISHED)
+                throw PermissionDeniedException("article")
+
+        return article
     }
 
     fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
         val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
-        val articles = if (status != null) {
-            articleRepo.findAllByStatus(status, page)
+        val authorId = authUserService.getUserId()
+
+        val articles = if (authUserService.hasRole(UserRole.EDITOR)) {
+            if (status == null)
+                articleRepo.findAll(page)
+            else
+                articleRepo.findAllByStatus(status, page)
+        } else if(authUserService.hasRole(UserRole.JOURNALIST)) {
+            if (status == null || status == ArticleStatus.PUBLISHED)
+                articleRepo.findAllByStatusOrAuthorId(ArticleStatus.PUBLISHED, authorId, page)
+            else
+                articleRepo.findAllByStatusAndAuthorId(status, authorId, page)
         } else {
-            articleRepo.findAll(page)
+            articleRepo.findAllByStatus(ArticleStatus.PUBLISHED, page)
         }
 
         return articles.map {
@@ -98,7 +127,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
-    fun updateArticleStatus(id: Long, initiatorId: Long, newStatus: ArticleStatus) {
+    fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         when (newStatus) {
@@ -121,6 +150,7 @@ class ArticleService(
                 if (article.status != ArticleStatus.ON_REVIEW)
                     throw UnsupportedOperationException()
 
+                val initiatorId: Long = authUserService.getUserId()
                 val editor = userRepo.findById(initiatorId).getOrNull() ?: throw UserNotFoundException()
 
                 article.editor = editor

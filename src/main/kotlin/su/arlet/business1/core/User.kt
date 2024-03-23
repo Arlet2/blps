@@ -16,5 +16,5 @@ class User(
     var passwordHash: String,
 
     @Enumerated(EnumType.STRING)
-    val role: UserRole = UserRole.DEFAULT,
+    var role: UserRole = UserRole.DEFAULT,
 )

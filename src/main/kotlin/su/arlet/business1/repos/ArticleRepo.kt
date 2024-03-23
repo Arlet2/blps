@@ -7,4 +7,7 @@ import su.arlet.business1.core.enums.ArticleStatus
 
 interface ArticleRepo : JpaRepository<Article, Long> {
     fun findAllByStatus(status: ArticleStatus, pageable: Pageable): List<Article>
+
+    fun findAllByStatusAndAuthorId(status: ArticleStatus, authorId: Long, pageable: Pageable): List<Article>
+    fun findAllByStatusOrAuthorId(status: ArticleStatus, authorId: Long, pageable: Pageable): List<Article>
 }

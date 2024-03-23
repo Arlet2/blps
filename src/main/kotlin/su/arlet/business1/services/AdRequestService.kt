@@ -5,11 +5,14 @@ import org.springframework.stereotype.Service
 import su.arlet.business1.core.AdRequest
 import su.arlet.business1.core.Auditory
 import su.arlet.business1.core.enums.AdRequestStatus
+import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
+import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
+import su.arlet.business1.security.services.AuthUserService
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.util.*
@@ -19,12 +22,12 @@ import kotlin.jvm.optionals.getOrElse
 class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val userRepo: UserRepo,
+    private val authUserService: AuthUserService,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class, DateTimeParseException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
-        val owner = userRepo.findById(
-            createAdRequest.ownerId ?: throw ValidationException("owner id must be provided")
-        ).getOrElse { throw EntityNotFoundException() }
+        val ownerId = authUserService.getUserId()
+        val owner = userRepo.findById(ownerId).getOrElse { throw EntityNotFoundException() }
 
         if (createAdRequest.lifeHours == null) {
             throw ValidationException("life hours must be provided")
@@ -55,6 +58,10 @@ class AdRequestService @Autowired constructor(
         val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
             throw EntityNotFoundException()
         }
+
+        val userId = authUserService.getUserId()
+        if (!authUserService.hasRole(UserRole.SALES) && adRequest.owner.id != userId)
+            throw PermissionDeniedException("ad request")
 
         updateAdRequestFields(adRequest, updateAdRequest)
 
@@ -99,6 +106,12 @@ class AdRequestService @Autowired constructor(
 
         if (adRequest.status == newStatus) return
 
+        val userId = authUserService.getUserId()
+        val isSales = authUserService.hasRole(UserRole.SALES)
+
+        if (!isSales && adRequest.owner.id != userId)
+            throw PermissionDeniedException("ad request")
+
         when (newStatus) {
             AdRequestStatus.SAVED ->
                 if (adRequest.status != AdRequestStatus.NEEDS_CLARIFICATION)
@@ -108,22 +121,26 @@ class AdRequestService @Autowired constructor(
                 if (adRequest.status != AdRequestStatus.SAVED)
                     throw UnsupportedStatusChangeException()
 
-            AdRequestStatus.NEEDS_CLARIFICATION ->
+            AdRequestStatus.NEEDS_CLARIFICATION -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
                     throw UnsupportedStatusChangeException()
-
-            AdRequestStatus.MODERATION ->
+                if (!isSales) throw PermissionDeniedException("ad request status")
+            }
+            AdRequestStatus.MODERATION -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
                     throw UnsupportedStatusChangeException()
-
-            AdRequestStatus.READY_TO_PUBLISH ->
+                if (!isSales) throw PermissionDeniedException("ad request status")
+            }
+            AdRequestStatus.READY_TO_PUBLISH -> {
                 if (adRequest.status != AdRequestStatus.MODERATION)
                     throw UnsupportedStatusChangeException()
-
-            AdRequestStatus.PUBLISHED ->
+                if (!isSales) throw PermissionDeniedException("ad request status")
+            }
+            AdRequestStatus.PUBLISHED -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
-
+                if (!isSales) throw PermissionDeniedException("ad request status")
+            }
             AdRequestStatus.CANCELED ->
                 if (adRequest.status == AdRequestStatus.PUBLISHED)
                     throw UnsupportedStatusChangeException()
@@ -144,32 +161,38 @@ class AdRequestService @Autowired constructor(
 
     @Throws(EntityNotFoundException::class)
     fun getAdRequest(adRequestId: Long): AdRequest {
-        return adRequestRepo.findById(adRequestId).getOrElse {
+        val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
             throw EntityNotFoundException()
         }
+
+        val userId = authUserService.getUserId()
+        if (!authUserService.hasRole(UserRole.SALES) && adRequest.owner.id != userId)
+            throw PermissionDeniedException("ad request")
+
+        return adRequest
     }
 
     fun getAdRequests(ownerId: Long?, status: String?): List<AdRequest> {
+        val isSales = authUserService.hasRole(UserRole.SALES)
+        val searchOwnerId = if (!isSales) authUserService.getUserId() else ownerId
+
         val adRequestStatus = try {
             status?.let {
                 AdRequestStatus.valueOf(it.uppercase(Locale.getDefault()))
             }
-        } catch (_: IllegalArgumentException) {
-            null
-        }
+        } catch (_: IllegalArgumentException) { null }
 
-        if (adRequestStatus != null && ownerId != null)
-            return adRequestRepo.findAllByOwnerIdAndStatus(ownerId, adRequestStatus)
+        if (adRequestStatus != null && searchOwnerId != null)
+            return adRequestRepo.findAllByOwnerIdAndStatus(searchOwnerId, adRequestStatus)
         if (adRequestStatus != null)
             return adRequestRepo.findAllByStatus(adRequestStatus)
-        if (ownerId != null)
-            return adRequestRepo.findAllByOwnerId(ownerId)
+        if (searchOwnerId != null)
+            return adRequestRepo.findAllByOwnerId(searchOwnerId)
 
         return adRequestRepo.findAll()
     }
 
     data class CreateAdRequest(
-        val ownerId: Long?,
         var requestText: String?,
         val ageSegments: String?,
         val incomeSegments: String?,
@@ -180,8 +203,6 @@ class AdRequestService @Autowired constructor(
     ) {
         @Throws(ValidationException::class)
         fun validate() {
-            if (ownerId == null)
-                throw ValidationException("owner id must be provided")
             if (requestText == null)
                 throw ValidationException("request text must be provided")
             if (requestText == "")
