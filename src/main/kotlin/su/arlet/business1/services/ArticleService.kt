@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.exceptions.EntityNotFoundException
-import su.arlet.business1.exceptions.PermissionDeniedException
-import su.arlet.business1.exceptions.UserNotFoundException
-import su.arlet.business1.exceptions.ValidationException
+import su.arlet.business1.exceptions.*
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
 import kotlin.jvm.optionals.getOrElse
@@ -153,29 +150,29 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)
+    @Throws(EntityNotFoundException::class, UnsupportedStatusChangeException::class, UserNotFoundException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         when (newStatus) {
             ArticleStatus.ON_REVIEW -> {
                 if (article.status != ArticleStatus.NEED_FIXES)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
             }
 
             ArticleStatus.NEED_FIXES -> {
                 if (article.status != ArticleStatus.ON_REVIEW)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
             }
 
             ArticleStatus.PUBLISHED -> {
                 if (article.status != ArticleStatus.APPROVED)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
             }
 
             ArticleStatus.APPROVED -> {
                 if (article.status != ArticleStatus.ON_REVIEW)
-                    throw UnsupportedOperationException()
+                    throw UnsupportedStatusChangeException()
 
                 val initiatorId: Long = authUserService.getUserId()
                 val editor = userRepo.findById(initiatorId).getOrNull() ?: throw UserNotFoundException()
