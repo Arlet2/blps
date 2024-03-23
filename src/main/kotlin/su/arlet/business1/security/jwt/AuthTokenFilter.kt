@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 import su.arlet.business1.security.services.AuthUsersDetails
 import su.arlet.business1.security.services.AuthUsersDetailsService
 import java.io.IOException
+import java.util.*
 
 class AuthTokenFilter : OncePerRequestFilter() {
     @Autowired
@@ -54,8 +55,8 @@ class AuthTokenFilter : OncePerRequestFilter() {
 
     private fun parseJwt(request: HttpServletRequest): String? {
         val headerAuth = request.getHeader("Authorization")
-        val bearerPrefix = "Bearer "
-        return if (StringUtils.hasText(headerAuth) && headerAuth.startsWith(bearerPrefix))
+        val bearerPrefix = "bearer "
+        return if (StringUtils.hasText(headerAuth) && headerAuth.lowercase().startsWith(bearerPrefix))
             headerAuth.substring(bearerPrefix.length)
         else null
     }
