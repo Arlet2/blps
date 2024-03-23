@@ -34,7 +34,9 @@ class JwtUtils {
         return try {
             parseToken(token)
             true
-        } catch (e: UnauthorizedError) { false }
+        } catch (e: UnauthorizedError) {
+            false
+        }
     }
 
     fun parseToken(token: String): Claims {

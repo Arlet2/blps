@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.User
 import su.arlet.business1.core.enums.UserRole
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.UserService
 
 
@@ -20,6 +22,7 @@ import su.arlet.business1.services.UserService
 @Tag(name = "Users API")
 class UserController(
     val userService: UserService,
+    val authUserService: AuthUserService,
 ) {
     data class UserEntity(
         val id: Long,
@@ -63,6 +66,7 @@ class UserController(
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUser(
         @RequestBody updateUserRequest: UserService.UpdateUserRequest,
+        request: HttpServletRequest,
     ): ResponseEntity<*> {
         updateUserRequest.validate()
 
@@ -83,7 +87,7 @@ class UserController(
     @ApiResponse(responseCode = "404", description = "Not found - user not found", content = [Content()])
     @ApiResponse(responseCode = "500", description = "Server error", content = [Content()])
     fun updateUserRole(
-        @RequestBody updateUserRoleRequest: UserService.UpdateUserRoleRequest
+        @RequestBody updateUserRoleRequest: UserService.UpdateUserRoleRequest,
     ): ResponseEntity<*> {
         updateUserRoleRequest.validate()
 

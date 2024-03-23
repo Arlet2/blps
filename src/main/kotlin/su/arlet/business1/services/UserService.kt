@@ -8,9 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import su.arlet.business1.core.User
-import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.UserAlreadyExistsException
 import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
@@ -27,20 +25,20 @@ class UserService @Autowired constructor(
     private val authUserService: AuthUserService,
     private val encoder: PasswordEncoder,
     private val jwtUtils: JwtUtils,
-    private val authenticationManager: AuthenticationManager
+    private val authenticationManager: AuthenticationManager,
 ) {
     private val minUsernameLength = 4
     private val minPasswordLength = 4
 
     data class AuthorizedUserCredentials(
         val username: String,
-        val token: String
+        val token: String,
     )
 
     @Throws(ValidationException::class)
     fun login(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
         val authentication =
-            try{
+            try {
                 authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken(authUserRequest.username, authUserRequest.password)
                 )
@@ -175,7 +173,7 @@ class UserService @Autowired constructor(
     data class UpdateUserRoleRequest(
         val userId: Long?,
         val username: String?,
-        val newRole: String?
+        val newRole: String?,
     ) {
         @Throws(ValidationException::class)
         fun validate() {

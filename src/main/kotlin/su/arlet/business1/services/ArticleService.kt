@@ -1,8 +1,8 @@
 package su.arlet.business1.services
 
-import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
@@ -10,10 +10,9 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.security.services.AuthUserService
-import su.arlet.business1.security.services.AuthUsersDetails
-import kotlin.jvm.optionals.getOrElse
 import su.arlet.business1.repos.*
+import su.arlet.business1.security.services.AuthUserService
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -88,7 +87,7 @@ class ArticleService(
         if (!authUserService.hasRole(UserRole.EDITOR) && article.author.id != authUserService.getUserId())
             if (article.status != ArticleStatus.PUBLISHED)
                 throw PermissionDeniedException("article")
-        
+
         if (article.status == ArticleStatus.PUBLISHED)
             incReadMetrics(article)
 
@@ -106,7 +105,7 @@ class ArticleService(
                 articleRepo.findAll(page)
             else
                 articleRepo.findAllByStatus(status, page)
-        } else if(authUserService.hasRole(UserRole.JOURNALIST)) {
+        } else if (authUserService.hasRole(UserRole.JOURNALIST)) {
             if (status == null || status == ArticleStatus.PUBLISHED)
                 articleRepo.findAllByStatusOrAuthorId(ArticleStatus.PUBLISHED, authorId, page)
             else
@@ -131,7 +130,7 @@ class ArticleService(
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incViewMetrics(article: Article) {
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.viewCounter++
@@ -140,7 +139,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incReadMetrics(article: Article) {
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.readCounter++

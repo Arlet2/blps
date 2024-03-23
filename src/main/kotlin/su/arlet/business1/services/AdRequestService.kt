@@ -126,21 +126,25 @@ class AdRequestService @Autowired constructor(
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad request status")
             }
+
             AdRequestStatus.MODERATION -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_CHECK)
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad request status")
             }
+
             AdRequestStatus.READY_TO_PUBLISH -> {
                 if (adRequest.status != AdRequestStatus.MODERATION)
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad request status")
             }
+
             AdRequestStatus.PUBLISHED -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad request status")
             }
+
             AdRequestStatus.CANCELED ->
                 if (adRequest.status == AdRequestStatus.PUBLISHED)
                     throw UnsupportedStatusChangeException()
@@ -180,7 +184,9 @@ class AdRequestService @Autowired constructor(
             status?.let {
                 AdRequestStatus.valueOf(it.uppercase(Locale.getDefault()))
             }
-        } catch (_: IllegalArgumentException) { null }
+        } catch (_: IllegalArgumentException) {
+            null
+        }
 
         if (adRequestStatus != null && searchOwnerId != null)
             return adRequestRepo.findAllByOwnerIdAndStatus(searchOwnerId, adRequestStatus)

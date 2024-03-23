@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import su.arlet.business1.core.AdRequest
+import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.services.AdRequestService
 
 @RestController
@@ -20,6 +21,7 @@ import su.arlet.business1.services.AdRequestService
 @Tag(name = "Ad requests API")
 class AdRequestController(
     val adRequestService: AdRequestService,
+    val authUserService: AuthUserService,
 ) {
     @GetMapping("/")
     @Operation(summary = "Get ad requests by filters")
@@ -32,7 +34,7 @@ class AdRequestController(
     fun getAdRequests(
         @RequestParam(name = "ownerId", required = false) ownerId: Long?,
         @RequestParam(name = "status", required = false) status: String?,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<*> {
         val adRequests = adRequestService.getAdRequests(ownerId, status)
         return ResponseEntity(adRequests, HttpStatus.OK)

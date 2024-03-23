@@ -1,19 +1,18 @@
 package su.arlet.business1.services
 
-import jakarta.transaction.Transactional
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
-import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.repos.*
+import su.arlet.business1.security.services.AuthUserService
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -100,6 +99,7 @@ class AdPostService @Autowired constructor(
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad post status")
             }
+
             AdPostStatus.PUBLISHED ->
                 if (adPost.status != AdPostStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
@@ -157,7 +157,7 @@ class AdPostService @Autowired constructor(
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incViewMetrics(adPost: AdPost) {
         val metrics = adPost.metrics ?: AdMetrics()
         metrics.viewCounter++

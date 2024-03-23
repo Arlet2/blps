@@ -11,7 +11,7 @@ class AuthUsersDetails(
     private val username: String,
     @JsonIgnore
     private val password: String,
-    private val authorities: Collection<GrantedAuthority?>
+    private val authorities: Collection<GrantedAuthority?>,
 ) : UserDetails {
     companion object {
         const val ROLE_PREFIX = "ROLE_"
