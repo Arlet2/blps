@@ -2,6 +2,7 @@ package su.arlet.business1.controllers.errors
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -54,6 +55,12 @@ class ErrorHandler {
     @ExceptionHandler(PermissionDeniedException::class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     fun handlePermissionDeniedException(e: PermissionDeniedException): String {
+        return "you don't have access to this ${e.message}"
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    fun handleAccessDeniedException(e: PermissionDeniedException): String {
         return "you don't have access to this ${e.message}"
     }
 }
