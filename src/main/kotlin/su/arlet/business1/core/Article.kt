@@ -33,4 +33,7 @@ class Article(
     @ManyToOne
     @JoinColumn(name = "editorId")
     var editor: User? = null,
+
+    @OneToOne
+    var metrics: ArticleMetrics? = null,
 )

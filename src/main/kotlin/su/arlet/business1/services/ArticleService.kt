@@ -1,24 +1,19 @@
 package su.arlet.business1.services
 
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import su.arlet.business1.core.AdPost
-import su.arlet.business1.core.Article
-import su.arlet.business1.core.Image
-import su.arlet.business1.core.User
+import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UserNotFoundException
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.repos.AdPostRepo
-import su.arlet.business1.repos.ArticleRepo
-import su.arlet.business1.repos.ImageRepo
-import su.arlet.business1.repos.UserRepo
 import su.arlet.business1.security.services.AuthUserService
 import su.arlet.business1.security.services.AuthUsersDetails
 import kotlin.jvm.optionals.getOrElse
+import su.arlet.business1.repos.*
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -28,6 +23,7 @@ class ArticleService(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
+    private val articleMetricsRepo: ArticleMetricsRepo,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
@@ -85,16 +81,21 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class)
+    @Transactional
     fun getArticle(id: Long): Article {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
         if (!authUserService.hasRole(UserRole.EDITOR) && article.author.id != authUserService.getUserId())
             if (article.status != ArticleStatus.PUBLISHED)
                 throw PermissionDeniedException("article")
+        
+        if (article.status == ArticleStatus.PUBLISHED)
+            incReadMetrics(article)
 
         return article
     }
 
+    @Transactional
     fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
         val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
@@ -114,6 +115,10 @@ class ArticleService(
             articleRepo.findAllByStatus(ArticleStatus.PUBLISHED, page)
         }
 
+        articles.forEach {
+            incViewMetrics(it)
+        }
+
         return articles.map {
             ShortArticle(
                 id = it.id,
@@ -124,6 +129,24 @@ class ArticleService(
                 editor = it.editor,
             )
         }
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    fun incViewMetrics(article: Article) {
+        val metrics = article.metrics ?: ArticleMetrics()
+        metrics.viewCounter++
+
+        article.metrics = articleMetricsRepo.save(metrics)
+        articleRepo.save(article)
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    fun incReadMetrics(article: Article) {
+        val metrics = article.metrics ?: ArticleMetrics()
+        metrics.readCounter++
+
+        article.metrics = articleMetricsRepo.save(metrics)
+        articleRepo.save(article)
     }
 
     @Throws(EntityNotFoundException::class, UnsupportedOperationException::class, UserNotFoundException::class)

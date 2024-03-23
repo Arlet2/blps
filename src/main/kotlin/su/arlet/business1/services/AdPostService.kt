@@ -1,5 +1,6 @@
 package su.arlet.business1.services
 
+import jakarta.transaction.Transactional
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -11,11 +12,8 @@ import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
-import su.arlet.business1.repos.AdPostRepo
-import su.arlet.business1.repos.AdRequestRepo
-import su.arlet.business1.repos.ImageRepo
-import su.arlet.business1.repos.UserRepo
 import su.arlet.business1.security.services.AuthUserService
+import su.arlet.business1.repos.*
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
@@ -26,6 +24,7 @@ class AdPostService @Autowired constructor(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
+    private val adMetricsRepo: AdMetricsRepo,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdPost(createAdPost: CreateAdPost): Long {
@@ -122,6 +121,7 @@ class AdPostService @Autowired constructor(
     }
 
     @Throws(EntityNotFoundException::class)
+    @Transactional
     fun getAdPost(adPostId: Long): AdPost {
         val adPost = adPostRepo.findById(adPostId).getOrElse {
             throw EntityNotFoundException()
@@ -129,6 +129,9 @@ class AdPostService @Autowired constructor(
 
         if (!authUserService.hasRole(UserRole.SALES) && adPost.status == AdPostStatus.SAVED)
             throw PermissionDeniedException("ad post")
+
+        if (adPost.status == AdPostStatus.PUBLISHED)
+            incViewMetrics(adPost)
 
         return adPost
     }
@@ -152,6 +155,15 @@ class AdPostService @Autowired constructor(
             if (isSales) adPostRepo.findAll()
             else throw ValidationException("status incorrect")
         }
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    fun incViewMetrics(adPost: AdPost) {
+        val metrics = adPost.metrics ?: AdMetrics()
+        metrics.viewCounter++
+
+        adPost.metrics = adMetricsRepo.save(metrics)
+        adPostRepo.save(adPost)
     }
 
     data class CreateAdPost(
