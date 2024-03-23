@@ -8,7 +8,7 @@ import su.arlet.business1.security.jwt.AuthTokenFilter
 
 @Service
 class AuthUserService(
-    private val authTokenFilter: AuthTokenFilter
+    private val authTokenFilter: AuthTokenFilter,
 ) {
     fun hasRole(role: UserRole): Boolean {
         return getUserDetails().authorities.any {

@@ -1,9 +1,9 @@
 package su.arlet.business1.services
 
-import jakarta.transaction.Transactional
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.core.enums.ArticleStatus
@@ -157,7 +157,7 @@ class AdPostService @Autowired constructor(
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incViewMetrics(adPost: AdPost) {
         val metrics = adPost.metrics ?: AdMetrics()
         metrics.viewCounter++

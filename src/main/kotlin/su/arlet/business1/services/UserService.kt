@@ -27,20 +27,20 @@ class UserService @Autowired constructor(
     private val authUserService: AuthUserService,
     private val encoder: PasswordEncoder,
     private val jwtUtils: JwtUtils,
-    private val authenticationManager: AuthenticationManager
+    private val authenticationManager: AuthenticationManager,
 ) {
     private val minUsernameLength = 4
     private val minPasswordLength = 4
 
     data class AuthorizedUserCredentials(
         val username: String,
-        val token: String
+        val token: String,
     )
 
     @Throws(ValidationException::class)
     fun login(authUserRequest: AuthUserRequest): AuthorizedUserCredentials {
         val authentication =
-            try{
+            try {
                 authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken(authUserRequest.username, authUserRequest.password)
                 )

@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -15,9 +14,10 @@ import su.arlet.business1.security.services.AuthUsersDetails
 import su.arlet.business1.security.services.AuthUsersDetailsService
 import java.io.IOException
 
-class AuthTokenFilter: OncePerRequestFilter() {
+class AuthTokenFilter : OncePerRequestFilter() {
     @Autowired
     private lateinit var jwtUtils: JwtUtils
+
     @Autowired
     private lateinit var userDetailsService: AuthUsersDetailsService
 
@@ -25,7 +25,7 @@ class AuthTokenFilter: OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         try {
             val userDetails = getUserDetails(request)

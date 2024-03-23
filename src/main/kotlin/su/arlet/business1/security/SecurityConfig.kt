@@ -36,7 +36,7 @@ import su.arlet.business1.security.services.AuthUsersDetailsService
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig @Autowired constructor(
     private val userDetailsService: AuthUsersDetailsService,
-    private val authEntryPoint: AuthEntryPoint
+    private val authEntryPoint: AuthEntryPoint,
 ) {
     @Value("\${api.path}")
     private var apiPath = ""
@@ -70,13 +70,13 @@ class SecurityConfig @Autowired constructor(
         val roleHierarchy = RoleHierarchyImpl()
         roleHierarchy.setHierarchy(
             "ROLE_ADMIN > ROLE_EDITOR\n" +
-            "ROLE_ADMIN > ROLE_SALES\n" +
+                    "ROLE_ADMIN > ROLE_SALES\n" +
 
-            "ROLE_EDITOR > ROLE_JOURNALIST\n" +
-            "ROLE_JOURNALIST > ROLE_DEFAULT\n" +
+                    "ROLE_EDITOR > ROLE_JOURNALIST\n" +
+                    "ROLE_JOURNALIST > ROLE_DEFAULT\n" +
 
-            "ROLE_SALES > ROLE_ADVERTISER\n" +
-            "ROLE_ADVERTISER > ROLE_DEFAULT"
+                    "ROLE_SALES > ROLE_ADVERTISER\n" +
+                    "ROLE_ADVERTISER > ROLE_DEFAULT"
         )
         return roleHierarchy
     }
@@ -93,7 +93,7 @@ class SecurityConfig @Autowired constructor(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.cors { obj: CorsConfigurer<HttpSecurity> -> obj.disable() }
             .csrf { obj: CsrfConfigurer<HttpSecurity> -> obj.disable() }
-            .exceptionHandling{ exceptionHandling ->
+            .exceptionHandling { exceptionHandling ->
                 exceptionHandling.authenticationEntryPoint(authEntryPoint)
             }
             .sessionManagement { sessionManagement ->

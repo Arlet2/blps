@@ -1,6 +1,5 @@
 package su.arlet.business1.security.jwt
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,11 +14,12 @@ import java.io.IOException
 @Component
 class AuthEntryPoint : AuthenticationEntryPoint {
     private val logger = LoggerFactory.getLogger(AuthEntryPoint::class.java)
+
     @Throws(IOException::class, ServletException::class)
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authException: AuthenticationException
+        authException: AuthenticationException,
     ) {
         logger.error("Unauthorized error: ${authException.message}")
 

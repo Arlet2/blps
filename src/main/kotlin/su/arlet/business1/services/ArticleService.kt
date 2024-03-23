@@ -1,8 +1,8 @@
 package su.arlet.business1.services
 
-import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
@@ -131,7 +131,7 @@ class ArticleService(
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incViewMetrics(article: Article) {
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.viewCounter++
@@ -140,7 +140,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     fun incReadMetrics(article: Article) {
         val metrics = article.metrics ?: ArticleMetrics()
         metrics.readCounter++
