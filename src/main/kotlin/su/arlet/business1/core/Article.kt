@@ -31,4 +31,7 @@ class Article(
     var author: User,
     @ManyToOne
     var editor: User? = null,
+
+    @OneToOne
+    var metrics: ArticleMetrics? = null,
 )

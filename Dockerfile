@@ -3,10 +3,9 @@ FROM gradle:8.6.0-jdk21 AS build
 WORKDIR /app
 
 COPY . .
-RUN gradle bootJar
+RUN gradle bootWar
 
-FROM openjdk:21
+FROM quay.io/wildfly/wildfly:27.0.0.Final-jdk17
 
-COPY --from=build /app/build/libs/business1-0.0.1-rolling.jar /
-
-CMD java -jar business1-0.0.2-rolling.jar
+RUN /opt/jboss/wildfly/bin/add-user.sh admin admin --silent
+COPY --from=build /app/build/libs/business1-0.0.2-rolling.war /opt/jboss/wildfly/standalone/deployments/
