@@ -50,7 +50,7 @@ class Login: LoginModule {
             password = String(passwordCallback.password)
 
             val servletContext = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?)?.request?.servletContext
-            val context = if (servletContext != null) WebApplicationContextUtils.getWebApplicationContext(servletContext) else null
+            val context = servletContext?.let { WebApplicationContextUtils.getWebApplicationContext(servletContext) }
             usersDetailsService = context?.getBean(UserDetailsService::class.java)
         } catch (e: Exception) {
             throw RuntimeException(e)
