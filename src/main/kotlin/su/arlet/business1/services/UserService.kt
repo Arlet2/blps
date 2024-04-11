@@ -43,10 +43,11 @@ class UserService @Autowired constructor(
                     UsernamePasswordAuthenticationToken(authUserRequest.username, authUserRequest.password)
                 )
             } catch (e: AuthenticationException) {
+                e.printStackTrace()
                 throw UserNotFoundException()
             }
         SecurityContextHolder.getContext().authentication = authentication
-        val jwtToken = jwtUtils.generateJwtToken(authentication)
+        val jwtToken = jwtUtils.generateJwtToken(authentication.principal as String)
 
         return AuthorizedUserCredentials(authUserRequest.username!!, jwtToken)
     }
