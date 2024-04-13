@@ -182,7 +182,7 @@ class UserService @Autowired constructor(
                 throw ValidationException("userId or username must be provided")
             if (userId != null && userId < 0)
                 throw ValidationException("userId  must be positive")
-            if (!username.isNullOrEmpty())
+            if (username.isNullOrEmpty())
                 throw ValidationException("username can't be empty")
             if (newRole.isNullOrEmpty())
                 throw ValidationException("new role can't be empty")
