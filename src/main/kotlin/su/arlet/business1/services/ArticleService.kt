@@ -2,6 +2,7 @@ package su.arlet.business1.services
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
@@ -80,7 +81,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class)
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun getArticle(id: Long): Article {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -93,7 +94,7 @@ class ArticleService(
         return article
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
         val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
@@ -129,7 +130,7 @@ class ArticleService(
         }
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun incViewMetrics(article: Article) {
         if (article.status != ArticleStatus.PUBLISHED)
             return
@@ -141,7 +142,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun incReadMetrics(article: Article) {
         if (article.status != ArticleStatus.PUBLISHED)
             return
@@ -153,7 +154,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     @Throws(EntityNotFoundException::class, UnsupportedStatusChangeException::class, UserNotFoundException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
@@ -192,7 +193,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun changeStatusesToPublished(article: Article) {
         article.status = ArticleStatus.PUBLISHED
         article.adPosts.forEach {
