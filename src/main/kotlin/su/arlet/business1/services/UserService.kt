@@ -43,10 +43,11 @@ class UserService @Autowired constructor(
                     UsernamePasswordAuthenticationToken(authUserRequest.username, authUserRequest.password)
                 )
             } catch (e: AuthenticationException) {
+                e.printStackTrace()
                 throw UserNotFoundException()
             }
         SecurityContextHolder.getContext().authentication = authentication
-        val jwtToken = jwtUtils.generateJwtToken(authentication)
+        val jwtToken = jwtUtils.generateJwtToken(authentication.principal as String)
 
         return AuthorizedUserCredentials(authUserRequest.username!!, jwtToken)
     }
@@ -181,7 +182,7 @@ class UserService @Autowired constructor(
                 throw ValidationException("userId or username must be provided")
             if (userId != null && userId < 0)
                 throw ValidationException("userId  must be positive")
-            if (!username.isNullOrEmpty())
+            if (username.isNullOrEmpty())
                 throw ValidationException("username can't be empty")
             if (newRole.isNullOrEmpty())
                 throw ValidationException("new role can't be empty")

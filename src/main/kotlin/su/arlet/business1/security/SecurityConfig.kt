@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -21,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import su.arlet.business1.security.jaas.MyJAASAuthenticationProvider
 import su.arlet.business1.security.jwt.AuthEntryPoint
 import su.arlet.business1.security.jwt.AuthTokenFilter
 import su.arlet.business1.security.services.AuthUsersDetailsService
@@ -47,10 +47,9 @@ class SecurityConfig @Autowired constructor(
     }
 
     @Bean
-    fun authenticationProvider(): DaoAuthenticationProvider {
-        val authProvider = DaoAuthenticationProvider()
+    fun authenticationProvider(): MyJAASAuthenticationProvider {
+        val authProvider = MyJAASAuthenticationProvider()
         authProvider.setUserDetailsService(userDetailsService)
-        authProvider.setPasswordEncoder(passwordEncoder())
         return authProvider
     }
 
