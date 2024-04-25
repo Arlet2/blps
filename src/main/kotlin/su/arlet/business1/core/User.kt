@@ -12,6 +12,7 @@ class User(
     val id: Long = 0,
     var name: String?,
     val username: String,
+    var email: String? = null,
     @JsonIgnore
     var passwordHash: String,
 

@@ -23,7 +23,6 @@ class AdPostService @Autowired constructor(
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
-    private val adMetricsRepo: AdMetricsRepo,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class)
     fun createAdPost(createAdPost: CreateAdPost): Long {
@@ -130,8 +129,6 @@ class AdPostService @Autowired constructor(
         if (!authUserService.hasRole(UserRole.SALES) && adPost.status == AdPostStatus.SAVED)
             throw PermissionDeniedException("ad post")
 
-        incViewMetrics(adPost)
-
         return adPost
     }
 
@@ -154,17 +151,6 @@ class AdPostService @Autowired constructor(
             if (isSales) adPostRepo.findAll()
             else throw ValidationException("status incorrect")
         }
-    }
-
-    @Transactional
-    fun incViewMetrics(adPost: AdPost) {
-        if (adPost.status != AdPostStatus.PUBLISHED)
-            return
-        val metrics = adPost.metrics ?: AdMetrics()
-        metrics.viewCounter++
-
-        adPost.metrics = adMetricsRepo.save(metrics)
-        adPostRepo.save(adPost)
     }
 
     data class CreateAdPost(
@@ -213,7 +199,7 @@ class AdPostService @Autowired constructor(
     ) {
         @Throws(ValidationException::class)
         fun validate() {
-            if (status != "")
+            if (status.isEmpty())
                 throw ValidationException("status must be not empty")
         }
     }
