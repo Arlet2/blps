@@ -88,6 +88,7 @@ class UserService @Autowired constructor(
 
     private fun updateUserFields(user: User, updateUserRequest: UpdateUserRequest) {
         updateUserRequest.name?.let { user.name = it }
+        updateUserRequest.email?.let { user.email = it }
         updateUserRequest.password?.let { user.passwordHash = hashPassword(it) }
     }
 
@@ -162,6 +163,7 @@ class UserService @Autowired constructor(
 
     data class UpdateUserRequest(
         val name: String?,
+        val email: String?,
         var password: String?,
     ) {
         @Throws(ValidationException::class)

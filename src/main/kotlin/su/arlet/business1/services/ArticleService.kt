@@ -12,6 +12,7 @@ import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.*
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
+import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
@@ -19,6 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 class ArticleService(
     private val articleRepo: ArticleRepo,
     private val adPostRepo: AdPostRepo,
+    private val adMetricsRepo: AdMetricsRepo,
     private val imageRepo: ImageRepo,
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
@@ -89,6 +91,11 @@ class ArticleService(
             if (article.status != ArticleStatus.PUBLISHED)
                 throw PermissionDeniedException("article")
 
+        if (article.adPosts.any { it.status == AdPostStatus.EXPIRED }) {
+            article.adPosts = article.adPosts.filter { it.status != AdPostStatus.EXPIRED }
+            articleRepo.save(article)
+        }
+
         incReadMetrics(article)
 
         return article
@@ -152,6 +159,21 @@ class ArticleService(
 
         article.metrics = articleMetricsRepo.save(metrics)
         articleRepo.save(article)
+
+        for (adPost: AdPost in article.adPosts)
+            incAdViewMetrics(adPost)
+    }
+
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    fun incAdViewMetrics(adPost: AdPost) {
+        if (adPost.status != AdPostStatus.PUBLISHED)
+            return
+
+        val metrics = adPost.metrics ?: AdMetrics()
+        metrics.viewCounter++
+
+        adPost.metrics = adMetricsRepo.save(metrics)
+        adPostRepo.save(adPost)
     }
 
     @Transactional(isolation=Isolation.REPEATABLE_READ)
@@ -198,6 +220,7 @@ class ArticleService(
         article.status = ArticleStatus.PUBLISHED
         article.adPosts.forEach {
             it.status = AdPostStatus.PUBLISHED
+            it.publishDate = LocalDateTime.now()
             adPostRepo.save(it)
 
             it.adRequest.status = AdRequestStatus.PUBLISHED
@@ -207,6 +230,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class)
+    @Transactional(isolation=Isolation.REPEATABLE_READ)
     fun updateArticleAds(id: Long, newAdPostIds: List<Long>) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -217,6 +241,14 @@ class ArticleService(
             if (adPost == null) {
                 println("warning: ad post with id=${adPostId} is not found. It will be ignored on updating article")
                 continue
+            } else if (adPost.status == AdPostStatus.SAVED) {
+                println("warning: ad post with id=${adPostId} can't be added to article " +
+                        "because it not ready to publish. It will be ignored on updating article")
+                continue
+            } else if (adPost.status == AdPostStatus.EXPIRED) {
+                println("warning: ad post with id=${adPostId} can't be added to article " +
+                        "because it already expired. It will be ignored on updating article")
+                continue
             }
 
             newAds.add(adPost)
@@ -225,6 +257,9 @@ class ArticleService(
         article.adPosts = newAds
 
         articleRepo.save(article)
+
+        if (article.status == ArticleStatus.PUBLISHED)
+            changeStatusesToPublished(article)
     }
 
     data class CreateArticleRequest(

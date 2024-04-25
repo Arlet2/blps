@@ -2,6 +2,8 @@ package su.arlet.business1.core
 
 import jakarta.persistence.*
 import su.arlet.business1.core.enums.AdPostStatus
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "ad_posts")
@@ -13,6 +15,7 @@ class AdPost(
     var title: String,
     var body: String,
     var targetLink: String,
+    var publishDate: LocalDateTime? = null,
 
     @ManyToOne
     var salesEditor: User?,
