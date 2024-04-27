@@ -16,7 +16,7 @@ import su.arlet.business1.gateways.email.letters.Letter
 @Configuration
 class JmsConfig {
     @Bean
-    fun jmsTemplate(@Qualifier("jmsConnectionFactory") connectionFactory: ConnectionFactory): JmsTemplate {
+    fun jmsTemplate(@Qualifier("connectionFactory") connectionFactory: ConnectionFactory): JmsTemplate {
         val jmsTemplate = JmsTemplate(connectionFactory)
         jmsTemplate.messageConverter = messageConverter()
         return jmsTemplate

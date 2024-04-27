@@ -1,6 +1,7 @@
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.ir.backend.js.compile
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     id("org.springframework.boot") version "3.2.3"
@@ -31,11 +32,26 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
     implementation("io.jsonwebtoken:jjwt:0.12.5")
+    implementation("javax.jms:javax.jms-api:2.0.1")
+    implementation("org.apache.activemq:artemis-jakarta-client:2.33.0")
+    implementation("org.apache.activemq:artemis-jakarta-server:2.33.0")
     implementation("org.apache.activemq:artemis-jms-server:2.33.0")
+    implementation("org.apache.activemq:artemis-jms-client:2.33.0")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
+
+tasks.withType<BootBuildImage> {
+    builder.set("paketobuildpacks/builder:tiny")
+    environment.set(
+        mapOf(
+            "BP_NATIVE_IMAGE" to "true",
+            "BP_NATIVE_IMAGE_BUILD_ARGUMENTS" to "--no-fallback --initialize-at-build-time=org.apache.activemq.artemis.jms.client --initialize-at-build-time=org.apache.activemq.artemis.core.remoting --initialize-at-build-time=org.apache.activemq.artemis.core.server.components --initialize-at-run-time=org.apache.activemq.artemis.utils --verbose --report-unsupported-elements-at-runtime --allow-incomplete-classpath"
+        )
+    )
+}
+
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
