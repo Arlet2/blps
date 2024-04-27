@@ -1,22 +1,17 @@
 package su.arlet.business1.schedule
 
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
 import org.quartz.DisallowConcurrentExecution
 import org.quartz.JobExecutionContext
 import org.quartz.PersistJobDataAfterExecution
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.quartz.QuartzJobBean
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.gateways.email.EmailGateway
-import su.arlet.business1.gateways.email.letters.Letter
-import su.arlet.business1.gateways.email.letters.NewAdsLetter
+import su.arlet.business1.core.letters.NewAdsLetter
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.UserRepo
-import java.time.LocalDateTime
 
 @Component
 @DisallowConcurrentExecution

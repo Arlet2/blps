@@ -1,6 +1,6 @@
-package su.arlet.business1.gateways.email
+package su.arlet.business1.core
 
-import su.arlet.business1.gateways.email.letters.Letter
+import su.arlet.business1.core.letters.Letter
 
 class EmailInfo (
     var to : String,

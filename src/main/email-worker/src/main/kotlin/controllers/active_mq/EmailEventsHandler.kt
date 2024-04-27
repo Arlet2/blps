@@ -1,10 +1,9 @@
-package su.arlet.business1.controllers.active_mq
+package su.arlet.controllers.active_mq
 
-import org.springframework.context.annotation.Profile
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
-import su.arlet.business1.gateways.email.EmailInfo
-import su.arlet.business1.services.EmailService
+import su.arlet.core.EmailInfo
+import su.arlet.services.EmailService
 
 @Component
 class EmailEventsHandler (

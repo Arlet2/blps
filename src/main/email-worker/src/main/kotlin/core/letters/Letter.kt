@@ -1,4 +1,4 @@
-package su.arlet.business1.gateways.email.letters
+package su.arlet.core.letters
 
 import java.io.Serializable
 
