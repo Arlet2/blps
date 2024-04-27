@@ -26,5 +26,10 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
 
+  active-mq:
+    image: apache/activemq-artemis:latest-alpine
+    ports:
+      - "5672:5672"
+      - "8161:8161"
 volumes:
   postgres:

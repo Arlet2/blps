@@ -1,4 +1,4 @@
-package su.arlet.business1.controllers
+package su.arlet.business1.controllers.rest
 
 
 import io.swagger.v3.oas.annotations.Operation

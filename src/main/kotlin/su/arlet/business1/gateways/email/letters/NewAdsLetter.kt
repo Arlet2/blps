@@ -3,9 +3,9 @@ package su.arlet.business1.gateways.email.letters
 import su.arlet.business1.core.AdPost
 
 class NewAdsLetter(
-    private val newAds: List<AdPost>,
+    newAds: List<AdPost>,
 ) : Letter("new-ads-letter", "New ads for last day!") {
-    override fun getHtml(): String {
+    init {
         var text = ""
 
         newAds.forEach {ad ->
@@ -17,7 +17,7 @@ class NewAdsLetter(
             text += "</br></br></br>"
         }
 
-        return """
+        html = """
             <html>
                 <body>
                     $text
