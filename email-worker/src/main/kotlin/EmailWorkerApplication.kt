@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class Business1Application : SpringApplication()
+class EmailWorkerApplication : SpringApplication()
 
 fun main(args: Array<String>) {
-    runApplication<Business1Application>(*args)
+    runApplication<EmailWorkerApplication>(*args)
 }

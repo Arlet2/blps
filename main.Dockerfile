@@ -9,4 +9,4 @@ FROM openjdk:21 AS RUN
 
 COPY --from=build /app/build/libs/business1-0.0.3-rolling.jar /
 
-RUN java -jar business1-0.0.3-rolling.jar
+ENTRYPOINT java -jar business1-0.0.3-rolling.jar
