@@ -13,7 +13,6 @@ import org.springframework.web.filter.OncePerRequestFilter
 import su.arlet.business1.security.services.AuthUsersDetails
 import su.arlet.business1.security.services.AuthUsersDetailsService
 import java.io.IOException
-import java.util.*
 
 class AuthTokenFilter : OncePerRequestFilter() {
     @Autowired

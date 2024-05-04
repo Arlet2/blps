@@ -8,7 +8,7 @@ import javax.security.auth.login.LoginException
 
 class RoleGranter(
     private val usersDetailsService: UserDetailsService?
-): AuthorityGranter {
+) : AuthorityGranter {
     override fun grant(principal: Principal?): MutableSet<String> {
         if (usersDetailsService == null) throw LoginException("No context")
         if (principal == null) return mutableSetOf()

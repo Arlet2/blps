@@ -1,15 +1,16 @@
 package su.arlet.business1.gateways.email
 
+import EmailInfo
+import letters.Letter
 import org.springframework.jms.core.JmsTemplate
 import org.springframework.stereotype.Service
-import su.arlet.business1.core.EmailInfo
-import su.arlet.business1.core.letters.Letter
 
 @Service
-class EmailGateway (
+class EmailGateway(
     private val template: JmsTemplate,
 ) {
+    private val queueName = "email-queue"
     fun sendEmail(to: String, letter: Letter) {
-        template.convertAndSend("test-queue", EmailInfo(to, letter))
+        template.convertAndSend(queueName, EmailInfo(to, letter))
     }
 }

@@ -2,7 +2,6 @@ package su.arlet.business1.core
 
 import jakarta.persistence.*
 import su.arlet.business1.core.enums.AdPostStatus
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity

@@ -8,8 +8,8 @@ import org.springframework.scheduling.quartz.QuartzJobBean
 import org.springframework.stereotype.Component
 import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.core.letters.NewAdsLetter
+import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.repos.AdPostRepo
 import su.arlet.business1.repos.UserRepo
 
@@ -45,7 +45,7 @@ class NewAdsCheckJob @Autowired constructor(
         }
 
         val letter = NewAdsLetter(newAdPosts)
-        editors.forEach {editor ->
+        editors.forEach { editor ->
             emailGateway.sendEmail(editor.email!!, letter)
         }
 

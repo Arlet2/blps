@@ -1,21 +1,21 @@
 package su.arlet.services
 
+import EmailInfo
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
-import su.arlet.core.EmailInfo
 
 
 @Service
-class EmailService (
+class EmailService(
     val mailSender: JavaMailSender,
-){
+) {
     @Value("\${email_from}")
-    private lateinit var from : String
+    private lateinit var from: String
 
     @Value("\${spring.mail.username}")
-    private lateinit var username : String
+    private lateinit var username: String
 
     fun sendEmail(emailInfo: EmailInfo) {
         val message = mailSender.createMimeMessage()
