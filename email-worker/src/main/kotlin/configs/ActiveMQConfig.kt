@@ -23,6 +23,8 @@ class ActiveMQConfig {
 
     @Bean
     fun connectionFactory(): ConnectionFactory {
-        return ActiveMQConnectionFactory("tcp://${host}:${port}?protocols=STOMP,AMQP,MQTT", user, password)
+        val url = "tcp://${host}:${port}?protocols=CORE"
+        println("Connected to $url")
+        return ActiveMQConnectionFactory(url, user, password)
     }
 }

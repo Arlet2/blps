@@ -9,9 +9,7 @@ import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
-import su.arlet.business1.core.letters.TestLetter
 import su.arlet.business1.exceptions.*
-import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
 import java.time.LocalDateTime
@@ -28,7 +26,6 @@ class ArticleService(
     private val authUserService: AuthUserService,
     private val articleMetricsRepo: ArticleMetricsRepo,
     private val adRequestRepo: AdRequestRepo,
-    private val emailGateway: EmailGateway,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
@@ -106,7 +103,6 @@ class ArticleService(
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
-        emailGateway.sendEmail("artemshulga03@gmail.com", TestLetter("hello"))
         val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
         val authorId = authUserService.getUserId()

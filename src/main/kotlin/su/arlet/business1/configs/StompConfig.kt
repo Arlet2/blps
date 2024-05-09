@@ -1,19 +1,19 @@
 package su.arlet.business1.configs
 
-import jakarta.jms.ConnectionFactory
-import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory
+import net.ser1.stomp.Client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+
 @Configuration
-class ActiveMQConfig {
+class StompConfig {
 
     @Value("\${mq_host}")
     private lateinit var host: String
 
     @Value("\${mq_port}")
-    private lateinit var port: String
+    private var port: Int = 0
 
     @Value("\${mq_user}")
     private lateinit var user: String
@@ -22,7 +22,9 @@ class ActiveMQConfig {
     private lateinit var password: String
 
     @Bean
-    fun connectionFactory(): ConnectionFactory {
-        return ActiveMQConnectionFactory("tcp://${host}:${port}?protocols=STOMP,AMQP,MQTT", user, password)
+    fun stompClient(): Client {
+        val client = Client(host, port, user, password)
+
+        return client
     }
 }

@@ -39,6 +39,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation(project(":shared", "default"))
+    implementation(files("libs/gozirra-client-0.4.1.jar"))
 }
 
 tasks.withType<BootBuildImage> {
