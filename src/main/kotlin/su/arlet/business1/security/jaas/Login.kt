@@ -16,14 +16,14 @@ import javax.security.auth.login.LoginException
 import javax.security.auth.spi.LoginModule
 
 
-class Login: LoginModule {
+class Login : LoginModule {
     private var usersDetailsService: UserDetailsService? = null
     private val encoder: PasswordEncoder = BCryptPasswordEncoder()
     private lateinit var subject: Subject
     private var username: String? = null
     private var password: String? = null
 
-    class UserPrincipal(private val name: String): Principal {
+    class UserPrincipal(private val name: String) : Principal {
         override fun getName(): String = name
     }
 
@@ -49,7 +49,8 @@ class Login: LoginModule {
             username = nameCallback.name
             password = String(passwordCallback.password)
 
-            val servletContext = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?)?.request?.servletContext
+            val servletContext =
+                (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?)?.request?.servletContext
             val context = servletContext?.let { WebApplicationContextUtils.getWebApplicationContext(servletContext) }
             usersDetailsService = context?.getBean(UserDetailsService::class.java)
         } catch (e: Exception) {

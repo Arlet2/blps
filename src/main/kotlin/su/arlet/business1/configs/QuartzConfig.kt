@@ -1,6 +1,8 @@
 package su.arlet.business1.configs
 
-import org.quartz.*
+import org.quartz.JobDetail
+import org.quartz.Scheduler
+import org.quartz.Trigger
 import org.quartz.impl.matchers.GroupMatcher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

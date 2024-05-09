@@ -1,14 +1,15 @@
-package su.arlet.business1.gateways.email.letters
+package su.arlet.business1.core.letters
 
+import letters.Letter
 import su.arlet.business1.core.AdPost
 
 class NewAdsLetter(
-    private val newAds: List<AdPost>,
+    newAds: List<AdPost>,
 ) : Letter("new-ads-letter", "New ads for last day!") {
-    override fun getHtml(): String {
+    init {
         var text = ""
 
-        newAds.forEach {ad ->
+        newAds.forEach { ad ->
             text += "<h1>${ad.title}</h1></br>"
             text += "<p>${ad.body}</p></br>"
             text += "<p>Image attached: ${ad.image?.link ?: "no"}</p></br>"
@@ -17,7 +18,7 @@ class NewAdsLetter(
             text += "</br></br></br>"
         }
 
-        return """
+        html = """
             <html>
                 <body>
                     $text

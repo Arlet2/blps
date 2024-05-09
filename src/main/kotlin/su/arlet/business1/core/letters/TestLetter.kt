@@ -1,13 +1,17 @@
-package su.arlet.business1.gateways.email.letters
+package su.arlet.business1.core.letters
+
+import letters.Letter
 
 class TestLetter(
-    private val testStr: String,
+    testStr: String,
 ) : Letter("test-letter", "Test letter") {
-    override fun getHtml(): String {
-        return """
+
+    init {
+        html = """
             <html>
                 <body>
                     <p>${testStr}</p>
+                    <b>Test bold text</b>
                 </body>
             </html>
         """.trimIndent()

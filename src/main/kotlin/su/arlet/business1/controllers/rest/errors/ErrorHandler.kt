@@ -1,4 +1,4 @@
-package su.arlet.business1.controllers.errors
+package su.arlet.business1.controllers.rest.errors
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus

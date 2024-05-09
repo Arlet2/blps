@@ -37,7 +37,7 @@ class ArticleService(
             Article(
                 title = createArticleRequest.title ?: throw ValidationException("title must be provided"),
                 text = createArticleRequest.text ?: throw ValidationException("text must be provided"),
-                images = getImagesById(createArticleRequest.imageIds?: listOf()),
+                images = getImagesById(createArticleRequest.imageIds ?: listOf()),
                 status = ArticleStatus.ON_REVIEW,
                 author = author,
             )
@@ -83,7 +83,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class)
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun getArticle(id: Long): Article {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -101,7 +101,7 @@ class ArticleService(
         return article
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun getArticles(status: ArticleStatus?, offset: Int, limit: Int): List<ShortArticle> {
         val page = PageRequest.of(maxOf(offset, 0), minOf(maxOf(limit, 10), 100))
 
@@ -137,7 +137,7 @@ class ArticleService(
         }
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun incViewMetrics(article: Article) {
         if (article.status != ArticleStatus.PUBLISHED)
             return
@@ -149,7 +149,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun incReadMetrics(article: Article) {
         if (article.status != ArticleStatus.PUBLISHED)
             return
@@ -164,7 +164,7 @@ class ArticleService(
             incAdViewMetrics(adPost)
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun incAdViewMetrics(adPost: AdPost) {
         if (adPost.status != AdPostStatus.PUBLISHED)
             return
@@ -176,7 +176,7 @@ class ArticleService(
         adPostRepo.save(adPost)
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Throws(EntityNotFoundException::class, UnsupportedStatusChangeException::class, UserNotFoundException::class)
     fun updateArticleStatus(id: Long, newStatus: ArticleStatus) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
@@ -215,7 +215,7 @@ class ArticleService(
         articleRepo.save(article)
     }
 
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun changeStatusesToPublished(article: Article) {
         article.status = ArticleStatus.PUBLISHED
         article.adPosts.forEach {
@@ -230,7 +230,7 @@ class ArticleService(
     }
 
     @Throws(EntityNotFoundException::class)
-    @Transactional(isolation=Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun updateArticleAds(id: Long, newAdPostIds: List<Long>) {
         val article = articleRepo.findById(id).getOrNull() ?: throw EntityNotFoundException()
 
@@ -242,12 +242,16 @@ class ArticleService(
                 println("warning: ad post with id=${adPostId} is not found. It will be ignored on updating article")
                 continue
             } else if (adPost.status == AdPostStatus.SAVED) {
-                println("warning: ad post with id=${adPostId} can't be added to article " +
-                        "because it not ready to publish. It will be ignored on updating article")
+                println(
+                    "warning: ad post with id=${adPostId} can't be added to article " +
+                            "because it not ready to publish. It will be ignored on updating article"
+                )
                 continue
             } else if (adPost.status == AdPostStatus.EXPIRED) {
-                println("warning: ad post with id=${adPostId} can't be added to article " +
-                        "because it already expired. It will be ignored on updating article")
+                println(
+                    "warning: ad post with id=${adPostId} can't be added to article " +
+                            "because it already expired. It will be ignored on updating article"
+                )
                 continue
             }
 
