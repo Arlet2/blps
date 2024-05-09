@@ -21,6 +21,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: main.Dockerfile
+          context: ./main.Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USER }}/business-main:latest
