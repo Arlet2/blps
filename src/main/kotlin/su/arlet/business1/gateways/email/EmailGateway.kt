@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class EmailGateway(
-    private val stompClient : Client,
+    private val stompClient: Client,
 ) {
     private val queueName = "email-queue"
     fun sendEmail(to: String, letter: Letter) {
