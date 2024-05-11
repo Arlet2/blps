@@ -3,9 +3,11 @@ package su.arlet.business1.services
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
+import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
@@ -13,11 +15,13 @@ import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
 class AdPostService @Autowired constructor(
+    private val adRequestService: AdRequestService,
     private val adPostRepo: AdPostRepo,
     private val adRequestRepo: AdRequestRepo,
     private val imageRepo: ImageRepo,
@@ -74,17 +78,23 @@ class AdPostService @Autowired constructor(
     }
 
     @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun updateAdPostStatus(adPostId: Long, updateStatus: UpdateAdPostStatus) {
-        val adPost = adPostRepo.findById(adPostId).getOrElse {
-            throw EntityNotFoundException()
-        }
-
         val newStatus = try {
             AdPostStatus.valueOf(updateStatus.status.uppercase(Locale.getDefault()))
         } catch (e: IllegalArgumentException) {
             throw ValidationException("unknown status")
         }
 
+        updateAdPostStatus(adPostId, newStatus)
+    }
+
+    @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    fun updateAdPostStatus(adPostId: Long, newStatus: AdPostStatus) {
+        val adPost = adPostRepo.findById(adPostId).getOrElse {
+            throw EntityNotFoundException()
+        }
         if (adPost.status == newStatus) return
 
         val isSales = authUserService.hasRole(UserRole.SALES)
@@ -97,11 +107,16 @@ class AdPostService @Autowired constructor(
                 if (adPost.status != AdPostStatus.SAVED)
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad post status")
+                adRequestService.updateAdRequestStatus(adPost.adRequest.id, AdRequestStatus.READY_TO_PUBLISH)
             }
 
-            AdPostStatus.PUBLISHED ->
+            AdPostStatus.PUBLISHED -> {
                 if (adPost.status != AdPostStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
+
+                adPost.publishDate = LocalDateTime.now()
+                adRequestService.updateAdRequestStatus(adPost.adRequest.id, AdRequestStatus.PUBLISHED)
+            }
 
             AdPostStatus.EXPIRED -> {}
         }
