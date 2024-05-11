@@ -107,6 +107,7 @@ class AdPostService @Autowired constructor(
                 if (adPost.status != AdPostStatus.SAVED)
                     throw UnsupportedStatusChangeException()
                 if (!isSales) throw PermissionDeniedException("ad post status")
+                adRequestService.updateAdRequestStatus(adPost.adRequest.id, AdRequestStatus.READY_TO_PUBLISH)
             }
 
             AdPostStatus.PUBLISHED -> {
