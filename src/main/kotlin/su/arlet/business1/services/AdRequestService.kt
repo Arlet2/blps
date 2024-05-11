@@ -2,14 +2,19 @@ package su.arlet.business1.services
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.AdRequest
 import su.arlet.business1.core.Auditory
 import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.UserRole
+import su.arlet.business1.core.letters.AdRequestChangeStatusLetter
+import su.arlet.business1.core.letters.ArticleChangeStatusLetter
 import su.arlet.business1.exceptions.EntityNotFoundException
 import su.arlet.business1.exceptions.PermissionDeniedException
 import su.arlet.business1.exceptions.UnsupportedStatusChangeException
 import su.arlet.business1.exceptions.ValidationException
+import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.repos.AdRequestRepo
 import su.arlet.business1.repos.UserRepo
 import su.arlet.business1.security.services.AuthUserService
@@ -23,6 +28,7 @@ class AdRequestService @Autowired constructor(
     private val adRequestRepo: AdRequestRepo,
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
+    private val emailGateway: EmailGateway,
 ) {
     @Throws(EntityNotFoundException::class, ValidationException::class, DateTimeParseException::class)
     fun createAdRequest(createAdRequest: CreateAdRequest): Long {
@@ -94,22 +100,31 @@ class AdRequestService @Autowired constructor(
     }
 
     @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun updateAdRequestStatus(adRequestId: Long, updateStatus: UpdateAdRequestStatus) {
-        val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
-            throw EntityNotFoundException()
-        }
         val newStatus = try {
             AdRequestStatus.valueOf(updateStatus.status)
         } catch (e: IllegalArgumentException) {
             throw ValidationException("unknown status")
         }
 
+        updateAdRequestStatus(adRequestId, newStatus)
+    }
+
+    @Throws(EntityNotFoundException::class, ValidationException::class, UnsupportedStatusChangeException::class)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    fun updateAdRequestStatus(adRequestId: Long, newStatus: AdRequestStatus) {
+        val adRequest = adRequestRepo.findById(adRequestId).getOrElse {
+            throw EntityNotFoundException()
+        }
+
         if (adRequest.status == newStatus) return
 
         val userId = authUserService.getUserId()
         val isSales = authUserService.hasRole(UserRole.SALES)
+        val isEditor = authUserService.hasRole(UserRole.EDITOR)
 
-        if (!isSales && adRequest.owner.id != userId)
+        if (!isSales && !isEditor && adRequest.owner.id != userId)
             throw PermissionDeniedException("ad request")
 
         when (newStatus) {
@@ -142,7 +157,7 @@ class AdRequestService @Autowired constructor(
             AdRequestStatus.PUBLISHED -> {
                 if (adRequest.status != AdRequestStatus.READY_TO_PUBLISH)
                     throw UnsupportedStatusChangeException()
-                if (!isSales) throw PermissionDeniedException("ad request status")
+                if (!isSales && !isEditor) throw PermissionDeniedException("ad request status")
             }
 
             AdRequestStatus.CANCELED ->
@@ -150,9 +165,13 @@ class AdRequestService @Autowired constructor(
                     throw UnsupportedStatusChangeException()
         }
 
+        val oldStatus = adRequest.status
         adRequest.status = newStatus
 
         adRequestRepo.save(adRequest)
+
+        if (adRequest.owner.email != null)
+            emailGateway.sendEmail(adRequest.owner.email!!, AdRequestChangeStatusLetter(adRequest, oldStatus))
     }
 
     @Throws(EntityNotFoundException::class)

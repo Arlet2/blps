@@ -9,7 +9,9 @@ import su.arlet.business1.core.enums.AdPostStatus
 import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
+import su.arlet.business1.core.letters.ArticleChangeStatusLetter
 import su.arlet.business1.exceptions.*
+import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
 import java.time.LocalDateTime
@@ -18,6 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Service
 class ArticleService(
+    private val adPostService: AdPostService,
     private val articleRepo: ArticleRepo,
     private val adPostRepo: AdPostRepo,
     private val adMetricsRepo: AdMetricsRepo,
@@ -25,7 +28,7 @@ class ArticleService(
     private val userRepo: UserRepo,
     private val authUserService: AuthUserService,
     private val articleMetricsRepo: ArticleMetricsRepo,
-    private val adRequestRepo: AdRequestRepo,
+    private val emailGateway: EmailGateway,
 ) {
     @Throws(UserNotFoundException::class, ValidationException::class)
     fun addArticle(createArticleRequest: CreateArticleRequest): Long {
@@ -210,21 +213,20 @@ class ArticleService(
             }
         }
 
+        val oldStatus = article.status
         article.status = newStatus
 
         articleRepo.save(article)
+
+        if (article.author.email != null)
+            emailGateway.sendEmail(article.author.email!!, ArticleChangeStatusLetter(article, oldStatus))
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun changeStatusesToPublished(article: Article) {
         article.status = ArticleStatus.PUBLISHED
         article.adPosts.forEach {
-            it.status = AdPostStatus.PUBLISHED
-            it.publishDate = LocalDateTime.now()
-            adPostRepo.save(it)
-
-            it.adRequest.status = AdRequestStatus.PUBLISHED
-            adRequestRepo.save(it.adRequest)
+            adPostService.updateAdPostStatus(it.id, AdPostStatus.PUBLISHED)
         }
         articleRepo.save(article)
     }
