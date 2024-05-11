@@ -12,6 +12,7 @@ class EmailGateway(
 ) {
     private val queueName = "email-queue"
     fun sendEmail(to: String, letter: Letter) {
+        println("Sending email to ${to}...")
         val encodedValue = ObjectMapper().writeValueAsString(EmailInfo(to, letter))
         stompClient.send(queueName, encodedValue, hashMapOf(Pair("_type", EmailInfo::class.java.name)))
     }

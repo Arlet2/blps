@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import su.arlet.business1.core.*
 import su.arlet.business1.core.enums.AdPostStatus
-import su.arlet.business1.core.enums.AdRequestStatus
 import su.arlet.business1.core.enums.ArticleStatus
 import su.arlet.business1.core.enums.UserRole
 import su.arlet.business1.core.letters.ArticleChangeStatusLetter
@@ -14,7 +13,6 @@ import su.arlet.business1.exceptions.*
 import su.arlet.business1.gateways.email.EmailGateway
 import su.arlet.business1.repos.*
 import su.arlet.business1.security.services.AuthUserService
-import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
@@ -220,6 +218,8 @@ class ArticleService(
 
         if (article.author.email != null)
             emailGateway.sendEmail(article.author.email!!, ArticleChangeStatusLetter(article, oldStatus))
+        else
+            println("Email is unknown no any notification was sent")
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
